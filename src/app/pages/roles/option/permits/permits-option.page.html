@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" name="code-working">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>
+      {{option}}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-searchbar animated (keyup)="search(iS)" (ionClear)="cleanSearchbar()" #iS></ion-searchbar>
+  <ion-list>
+    <ion-item *ngFor="let profile of profiles">
+      <ion-label>{{profile}}</ion-label>
+      <ion-toggle checked="{{profile.options.length > 0}}" (ionChange)="modifyPermission(profile)"></ion-toggle>
+    </ion-item>
+  </ion-list>
+</ion-content>

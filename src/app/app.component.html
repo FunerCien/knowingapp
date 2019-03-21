@@ -8,8 +8,11 @@
       </ion-header>
       <ion-content>
         <ion-list>
-          <ion-menu-toggle auto-hide="false" *ngFor="let p of pages">
-            <app-option-item-menu [option]="p"></app-option-item-menu>
+          <ion-list-header>
+            <ion-label>Bienvenido Funer Cien</ion-label>
+          </ion-list-header>
+          <ion-menu-toggle auto-hide="false" *ngFor="let option of options">
+            <app-option-item-menu [option]="option"></app-option-item-menu>
           </ion-menu-toggle>
         </ion-list>
       </ion-content>

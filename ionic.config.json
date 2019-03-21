@@ -1,6 +1,8 @@
 {
   "name": "knowingapp",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular",
   "id": "68a62350"
 }

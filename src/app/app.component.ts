@@ -18,19 +18,15 @@ export class AppComponent {
     private router: Router
   ) { this.initializeApp(); }
 
-  pages = [
-    {
-      title: 'Permisos',
-      url: '/permits',
-      icon: 'paper'
-    }
+  options = [
+    { title: 'Nosotros', url: '/roles', icon: 'microphone' }
   ];
 
   ngOnInit() {
     this.router.events.subscribe((event: RouterEvent) => {
       if (event instanceof NavigationEnd) {
         if (event.url === '/login') this.menu.enable(false);
-        this.pages.map(p => p['active'] = (event.url === p.url));
+        this.options.map(o => o['active'] = (event.url.split("/")[1] === o.url.split("/")[1]));
       }
     });
   }
