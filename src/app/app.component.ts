@@ -10,31 +10,25 @@ import { Router, RouterEvent, NavigationEnd } from '@angular/router';
   templateUrl: 'app.component.html'
 })
 export class AppComponent {
-  constructor(
-    private platform: Platform,
-    private splashScreen: SplashScreen,
-    private statusBar: StatusBar,
-    private menu: MenuController,
-    private router: Router
-  ) { this.initializeApp(); }
+  constructor(private platform: Platform, private splashScreen: SplashScreen, private statusBar: StatusBar, private menu: MenuController, private router: Router) { this.initializeApp(); }
 
-  options = [
-    { title: 'Nosotros', url: '/roles', icon: 'microphone' }
-  ];
-
-  ngOnInit() {
-    this.router.events.subscribe((event: RouterEvent) => {
-      if (event instanceof NavigationEnd) {
-        if (event.url === '/login') this.menu.enable(false);
-        this.options.map(o => o['active'] = (event.url.split("/")[1] === o.url.split("/")[1]));
-      }
-    });
-  }
-
+  options = [{
+    icon: 'microphone',
+    title: 'Nosotros',
+    url: '/roles'
+  }];
   initializeApp() {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+    });
+  }
+  ngOnInit() {
+    this.router.events.subscribe((event: RouterEvent) => {
+      if (event instanceof NavigationEnd) {
+        this.menu.enable(event.url !== '/');
+        this.options.map(o => o['active'] = (event.url.split("/")[1] === o.url.split("/")[1]));
+      }
     });
   }
 }

@@ -2,21 +2,21 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="close()">
-        <ion-icon name="arrow-back" mode="ios"></ion-icon>
+        <ion-icon name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>
-      {{option}}
+      {{profile}}
     </ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content>
   <ion-searchbar animated mode="ios" (keyup)="search(iS)" (ionClear)="cleanSearchbar()" #iS></ion-searchbar>
   <ion-list lines="none">
-    <ion-item *ngFor="let profile of profiles">
-      <ion-label>{{profile}}</ion-label>
-      <ion-toggle checked="{{profile.options.length>0}}" disabled="{{profile.id==1}}" mode="ios"
-        (ionChange)="modifyPermission(profile)">
+    <ion-item *ngFor="let option of options">
+      <ion-label>{{option}}</ion-label>
+      <ion-toggle checked="{{option.profiles.length>0}}" disabled="{{profile.id==1}}" mode="ios"
+        (ionChange)="modifyPermission(option)">
       </ion-toggle>
     </ion-item>
   </ion-list>

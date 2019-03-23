@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start" name="code-working">
+    <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>
@@ -9,16 +9,16 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <ion-searchbar animated (keyup)="search(iS)" (ionClear)="cleanSearchbar()" #iS></ion-searchbar>
-  <ion-list>
+  <ion-searchbar animated mode="ios" (keyup)="search(iS)" (ionClear)="cleanSearchbar()" #iS></ion-searchbar>
+  <ion-list lines="none">
     <ion-item-sliding *ngFor="let option of options" #iIS>
       <ion-item>
         <ion-label>{{option}}</ion-label>
-        <ion-icon src="../../../../assets/svg/ios-arrow-back.svg" slot="end"></ion-icon>
+        <ion-icon mode="ios" name="arrow-back" slot="end"></ion-icon>
       </ion-item>
       <ion-item-options side="end">
-        <ion-item-option color="white" (click)="showPermits(option.id, iIS)">
-          <ion-chip>
+        <ion-item-option color="white">
+          <ion-chip (click)="showPermits(option.id, iIS)">
             <ion-icon name="code"></ion-icon>
             <ion-label>{{option.profiles.length}}</ion-label>
           </ion-chip>

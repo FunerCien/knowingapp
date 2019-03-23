@@ -9,11 +9,23 @@ import { AppComponent } from './app.component';
 import { OptionItemMenuComponent } from './components/option/option-item-menu';
 
 @NgModule({
-  declarations: [AppComponent, OptionItemMenuComponent],
-  entryComponents: [],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule],
-  providers: [StatusBar, SplashScreen, { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
+  bootstrap: [AppComponent],
+  declarations: [
+    AppComponent,
+    OptionItemMenuComponent
   ],
-  bootstrap: [AppComponent]
+  imports: [
+    AppRoutingModule,
+    BrowserModule,
+    IonicModule.forRoot()
+  ],
+  providers: [
+    SplashScreen,
+    StatusBar,
+    {
+      provide: RouteReuseStrategy,
+      useClass: IonicRouteStrategy
+    }
+  ]
 })
 export class AppModule { }

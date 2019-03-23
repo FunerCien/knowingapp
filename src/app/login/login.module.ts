@@ -7,9 +7,16 @@ import { LoginPage } from './login.page';
 import { RolesPageModule } from '../pages/roles/roles.module';
 
 @NgModule({
-  imports: [RouterModule.forChild([{
-    path: '', component: LoginPage
-  }]), CommonModule, FormsModule, IonicModule, RolesPageModule],
-  declarations: [LoginPage]
+  declarations: [LoginPage],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    RolesPageModule,
+    RouterModule.forChild([{
+      component: LoginPage,
+      path: ''
+    }])
+  ]
 })
 export class LoginPageModule { }

@@ -6,19 +6,19 @@ export class Mock {
             new Entities.Option({
                 id: 1, action: "READ", category: "OPTIONS", profiles: [
                     new Entities.Profile({ id: 1, title: "SuperAdministrador", options: [] }),
-                    new Entities.Profile({ id: 3, title: "Lider de segmento", options: [] })
+                    new Entities.Profile({ id: 2, title: "Lider de segmento", options: [] })
                 ]
             }),
             new Entities.Option({
                 id: 2, action: "CREATE", category: "PROFILES", profiles: [
                     new Entities.Profile({ id: 1, title: "SuperAdministrador", options: [] }),
-                    new Entities.Profile({ id: 3, title: "Lider de segmento", options: [] })
+                    new Entities.Profile({ id: 2, title: "Lider de segmento", options: [] })
                 ]
             }),
             new Entities.Option({
                 id: 3, action: "READ", category: "PROFILES", profiles: [
                     new Entities.Profile({ id: 1, title: "SuperAdministrador", options: [] }),
-                    new Entities.Profile({ id: 3, title: "Lider de segmento", options: [] })
+                    new Entities.Profile({ id: 2, title: "Lider de segmento", options: [] })
                 ]
             }),
             new Entities.Option({
@@ -34,19 +34,19 @@ export class Mock {
             new Entities.Option({
                 id: 6, action: "CREATE", category: "PERMITS", profiles: [
                     new Entities.Profile({ id: 1, title: "SuperAdministrador", options: [] }),
-                    new Entities.Profile({ id: 3, title: "Lider de segmento", options: [] })
+                    new Entities.Profile({ id: 2, title: "Lider de segmento", options: [] })
                 ]
             }),
             new Entities.Option({
                 id: 7, action: "READ", category: "PERMITS", profiles: [
                     new Entities.Profile({ id: 1, title: "SuperAdministrador", options: [] }),
-                    new Entities.Profile({ id: 3, title: "Lider de segmento", options: [] })
+                    new Entities.Profile({ id: 2, title: "Lider de segmento", options: [] })
                 ]
             }),
             new Entities.Option({
                 id: 8, action: "DELETE", category: "PERMITS", profiles: [
                     new Entities.Profile({ id: 1, title: "SuperAdministrador", options: [] }),
-                    new Entities.Profile({ id: 3, title: "Lider de segmento", options: [] })
+                    new Entities.Profile({ id: 2, title: "Lider de segmento", options: [] })
                 ]
             })
         ];

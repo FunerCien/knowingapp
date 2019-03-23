@@ -2,10 +2,22 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
 @NgModule({
-  imports: [RouterModule.forRoot([
-    { path: '', loadChildren: './login/login.module#LoginPageModule' },
-    { path: 'roles', loadChildren: './pages/roles/roles.module#RolesPageModule' }
-  ], { preloadingStrategy: PreloadAllModules })],
-  exports: [RouterModule]
+  exports: [RouterModule],
+  imports: [
+    RouterModule.forRoot(
+      [
+        {
+          loadChildren: './login/login.module#LoginPageModule',
+          path: ''
+        },
+        {
+          loadChildren: './pages/roles/roles.module#RolesPageModule',
+          path: 'roles'
+        }
+      ], {
+        preloadingStrategy: PreloadAllModules
+      }
+    )
+  ]
 })
 export class AppRoutingModule { }

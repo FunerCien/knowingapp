@@ -6,28 +6,33 @@
     <ion-title>
       Perfiles
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/roles/option" routerDirection="root">
+        <ion-icon name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 <ion-content>
+  <ion-searchbar animated mode="ios" (keyup)="search(iS)" (ionClear)="cleanSearchbar()" #iS></ion-searchbar>
   <ion-list lines="none">
-    <ion-item *ngIf="allProfiles == null">
-      <ion-list lines="none">
-        <ion-list-header>
-          <ion-label>No hay opciones</ion-label>
-        </ion-list-header>
-      </ion-list>
-    </ion-item>
-    <ion-item *ngFor="let profile of allProfiles">
-      <ion-list lines="none">
-        <ion-list-header>
-          <ion-label>{{profile.title}}</ion-label>
-        </ion-list-header>
-        <ion-list-header routerLink="/permits/profile" routerDirection="root" *ngFor="let option of profile.options">
-          <ion-label>
-            <ion-icon name="code-working"></ion-icon> {{option.title}}
-          </ion-label>
-        </ion-list-header>
-      </ion-list>
-    </ion-item>
+    <ion-item-sliding *ngFor="let profile of profiles" #iIS>
+      <ion-item>
+        <ion-label>{{profile}}</ion-label>
+        <ion-icon src="../../../../assets/svg/ios-arrow-back.svg" slot="end"></ion-icon>
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option color="white">
+          <ion-chip>
+            <ion-icon name="person"></ion-icon>
+            <ion-label>¿?</ion-label>
+          </ion-chip>
+          <ion-chip (click)="showPermits(profile.id, iIS)">
+            <ion-icon name="options"></ion-icon>
+            <ion-label>{{profile.options.length}}</ion-label>
+          </ion-chip>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
   </ion-list>
 </ion-content>

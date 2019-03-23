@@ -11,18 +11,15 @@ export module Entities {
             this.profiles = option && option.profiles || null;
             this.toString = () => {
                 let name: String;
-
                 if (this.action === "CREATE") name = "Crear "
                 else if (this.action === "READ") name = "Consultar "
                 else if (this.action === "UPDATE") name = "Actualizar "
                 else if (this.action === "DELETE") name = "Eliminar "
                 else name = "¿?";
-
                 if (this.category === "OPTIONS") name += "opciones"
                 else if (this.category === "PROFILES") name += "perfiles"
                 else if (this.category === "PERMITS") name += "permisos"
                 else name += "¿?";
-
                 return name.toString();
             };
         }
