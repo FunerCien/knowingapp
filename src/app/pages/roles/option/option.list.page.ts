@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Entities } from 'src/app/entities/Entities';
-import { IonItemSliding, IonSearchbar, ModalController } from '@ionic/angular';
 import { Mock } from 'src/app/entities/Mock';
-import { Util } from 'src/app/components/utility';
 import { PermitsByOptionPage } from './permits/permits-option.page';
+import { Util } from 'src/app/components/utilities/utility';
+import { ModalController, IonSearchbar } from '@ionic/angular';
 
 @Component({
     selector: 'app-option-list',
@@ -14,12 +14,11 @@ export class OptionListPage implements OnInit {
     options: Entities.Option[];
     searchbarCleanable: Boolean = false;
     constructor(public modal: ModalController) { }
-    async showPermits(optionId: Number, sliding: IonItemSliding) {
+    async showPermits(optionId: Number) {
         let modal = await this.modal.create({
             component: PermitsByOptionPage, componentProps: { 'optionId': optionId, 'close': () => modal.dismiss() }
         });
         modal.present();
-        sliding.close();
     }
     cleanSearchbar() { this.options = this.allOptions; }
     ngOnInit() {

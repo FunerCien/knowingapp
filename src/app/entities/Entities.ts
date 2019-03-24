@@ -8,7 +8,7 @@ export module Entities {
             this.id = option && option.id || null;
             this.action = option && option.action || null;
             this.category = option && option.category || null;
-            this.profiles = option && option.profiles || null;
+            this.profiles = option && option.profiles || [];
             this.toString = () => {
                 let name: String;
                 if (this.action === "CREATE") name = "Crear "
@@ -31,7 +31,7 @@ export module Entities {
         constructor(profile?: Profile) {
             this.id = profile && profile.id || null;
             this.title = profile && profile.title || null;
-            this.options = profile && profile.options || null;
+            this.options = profile && profile.options || [];
             this.toString = () => this.title.toString();
         }
     }

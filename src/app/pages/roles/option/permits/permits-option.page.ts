@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Entities } from 'src/app/entities/Entities';
 import { Mock } from 'src/app/entities/Mock';
 import { IonSearchbar, ToastController } from '@ionic/angular';
-import { Util } from 'src/app/components/utility';
+import { Util } from 'src/app/components/utilities/utility';
 
 @Component({
   selector: 'app-permits-option',
@@ -26,13 +26,19 @@ export class PermitsByOptionPage implements OnInit {
     });
     this.profiles = this.allProfiles;
   }
-  cleanSearchbar() { this.profiles = this.allProfiles; }
+  cleanProfiles() { this.profiles = this.allProfiles; }
   closeModal() { close() }
   ngOnInit() {
+    let profilesId: Number[] = new Array();
+    this.allProfiles = [];
     this.option = Mock.options.find(o => o.id == this.optionId);
-    Mock.profiles.forEach(p => this.allProfiles.push(new Entities.Profile(p)));
-    this.allProfiles.filter(p => p.options = p.options.filter(o => o.id == this.option.id));
-    this.profiles = this.allProfiles;
+    this.option.profiles.forEach(p => profilesId.push(p.id));
+    Mock.profiles.forEach(p => {
+      p.options = [];
+      if (profilesId.includes(p.id)) p.options.push(new Entities.Option());
+      this.allProfiles.push(new Entities.Profile(p))
+    });
+    this.cleanProfiles();
   }
   search(searchbar: IonSearchbar) { this.profiles = Util.search(this.allProfiles, searchbar.value); }
 }

@@ -7,7 +7,7 @@
       Perfiles
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button routerLink="/roles/option" routerDirection="root">
+      <ion-button (click)="adminProfile()">
         <ion-icon name="add"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -15,24 +15,9 @@
 </ion-header>
 <ion-content>
   <ion-searchbar animated mode="ios" (keyup)="search(iS)" (ionClear)="cleanSearchbar()" #iS></ion-searchbar>
-  <ion-list lines="none">
-    <ion-item-sliding *ngFor="let profile of profiles" #iIS>
-      <ion-item>
-        <ion-label>{{profile}}</ion-label>
-        <ion-icon src="../../../../assets/svg/ios-arrow-back.svg" slot="end"></ion-icon>
-      </ion-item>
-      <ion-item-options side="end">
-        <ion-item-option color="white">
-          <ion-chip>
-            <ion-icon name="person"></ion-icon>
-            <ion-label>¿?</ion-label>
-          </ion-chip>
-          <ion-chip (click)="showPermits(profile.id, iIS)">
-            <ion-icon name="options"></ion-icon>
-            <ion-label>{{profile.options.length}}</ion-label>
-          </ion-chip>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
+  <ion-list>
+    <ion-item (click)="adminProfile(profile)" *ngFor="let profile of profiles">
+      <ion-label>{{profile}}</ion-label>
+    </ion-item>
   </ion-list>
 </ion-content>
