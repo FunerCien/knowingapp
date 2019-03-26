@@ -2,12 +2,13 @@ export module Entities {
     export class Option {
         id: Number;
         action: String;
-        category: String;
+        module: String;
+        update: String;
         profiles: Profile[];
         constructor(option?: Option) {
             this.id = option && option.id || null;
             this.action = option && option.action || null;
-            this.category = option && option.category || null;
+            this.module = option && option.module || null;
             this.profiles = option && option.profiles || [];
             this.toString = () => {
                 let name: String;
@@ -16,9 +17,9 @@ export module Entities {
                 else if (this.action === "UPDATE") name = "Actualizar "
                 else if (this.action === "DELETE") name = "Eliminar "
                 else name = "¿?";
-                if (this.category === "OPTIONS") name += "opciones"
-                else if (this.category === "PROFILES") name += "perfiles"
-                else if (this.category === "PERMITS") name += "permisos"
+                if (this.module === "OPTIONS") name += "opciones"
+                else if (this.module === "PROFILES") name += "perfiles"
+                else if (this.module === "PERMITS") name += "permisos"
                 else name += "¿?";
                 return name.toString();
             };
@@ -27,10 +28,12 @@ export module Entities {
     export class Profile {
         id: Number;
         title: String;
+        update: String;
         options: Option[];
         constructor(profile?: Profile) {
             this.id = profile && profile.id || null;
             this.title = profile && profile.title || null;
+            this.update = profile && profile.update || null;
             this.options = profile && profile.options || [];
             this.toString = () => this.title.toString();
         }
