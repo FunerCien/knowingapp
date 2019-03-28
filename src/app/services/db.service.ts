@@ -74,9 +74,7 @@ export class DatabaseService {
 
     private async dataToSyncUp(sync: Entities.Synchronization) {
         return this.isReady().then(async () => {
-            return this.database.executeSql(`SELECT id FROM ${sync.entity};`, []).then((data) => {
-                for (let i = 0; i < data.rows.length; i++) sync.ids.push(data.rows.item(i).id);
-            }).then(async () => {
+            return this.database.executeSql(`SELECT id FROM ${sync.entity};`, []).then((data) => { for (let i = 0; i < data.rows.length; i++) sync.ids.push(data.rows.item(i).id); }).then(async () => {
                 return this.database.executeSql(`SELECT * FROM ${sync.entity} WHERE edition > '${sync.edition}';`, []).then((data) => {
                     for (let i = 0; i < data.rows.length; i++) sync.entities.push(data.rows.item(i));
                     return sync;
