@@ -1,4 +1,20 @@
+import { Table } from '../components/utilities/enums/Tables';
+
 export module Entities {
+
+    export class Synchronization {
+        edition: String;
+        entity: Table;
+        entities: any[];
+        ids: Number[];
+        constructor(synchronization?: Synchronization) {
+            this.edition = synchronization && synchronization.edition || null;
+            this.entity = synchronization && synchronization.entity || null;
+            this.entities = synchronization && synchronization.entities || [];
+            this.ids = synchronization && synchronization.ids || [];
+        }
+    }
+
     export class Option {
         id: Number;
         action: String;

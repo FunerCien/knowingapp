@@ -32,7 +32,7 @@ export class AppComponent {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
-      this.createDB();
+      //this.syncUp();
     });
   }
   ngOnInit() {
@@ -43,8 +43,8 @@ export class AppComponent {
       }
     });
   }
-  async createDB() {
+  private async syncUp() {
     const loading = await this.loading.create({ message: 'Sincronizando información' });
-    this.dbService.createDB(() => loading.dismiss());
+    this.dbService.openDB().then(() => loading.dismiss());
   }
 }

@@ -10,6 +10,9 @@ export class LoginPage {
   constructor(private dbService: DatabaseService) {
   }
 
+  async crea() {
+    this.dbService.openDB().then(() => this.dbService.syncUp().then((l) => console.log(l)));
+  }
   async opt() {
     this.dbService.optionsFindAll().then((l) => console.log(l));
   }
