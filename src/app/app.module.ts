@@ -10,6 +10,8 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { DatabaseService } from './services/db.service';
 import { OptionItemMenuComponent } from './components/option/option-item-menu';
+import { SynchroizationService } from './services/synchronization.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   bootstrap: [AppComponent],
@@ -20,6 +22,7 @@ import { OptionItemMenuComponent } from './components/option/option-item-menu';
   imports: [
     AppRoutingModule,
     BrowserModule,
+    HttpClientModule,
     IonicModule.forRoot()
   ],
   providers: [
@@ -27,6 +30,7 @@ import { OptionItemMenuComponent } from './components/option/option-item-menu';
     SplashScreen,
     SQLite,
     StatusBar,
+    SynchroizationService,
     {
       provide: RouteReuseStrategy,
       useClass: IonicRouteStrategy

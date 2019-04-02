@@ -2,7 +2,6 @@ import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
-import { Table } from '../components/utilities/enums/Tables';
 import { Entities } from '../entities/Entities';
 
 @Injectable()
@@ -47,8 +46,8 @@ export class DatabaseService {
             "id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "entity TEXT NOT NULL," +
             "edition TEXT NOT NULL);", []).then(async () => {
-                return this.database.executeSql("SELECT COUNT(0) size FROM synchronizations;", []).then(async (data) => {
-                    if (data.rows.item(0).size === 0) {
+                return this.database.executeSql("SELECT COUNT(0) size FROM synchronizations;", []).then(async e => {
+                    if (e.rows.item(0).size === 0) {
                         return this.database.executeSql("INSERT INTO synchronizations(entity, edition)" +
                             "VALUES ('OPTIONS', '2000-01-01 00:00:00')," +
                             "('PROFILES', '2000-01-01 00:00:00');", []);
@@ -65,26 +64,32 @@ export class DatabaseService {
     }
 
     public async syncUp() {
-        return this.isReady().then(() => this.selectAll("synchronizations").then((syncs) => {
-            let allSyncs: Entities.Synchronization[] = new Array();
-            syncs.forEach(s => this.dataToSyncUp(new Entities.Synchronization(s)).then((d) => allSyncs.push(d)));
-            return allSyncs;
+        return this.isReady().then(() => this.select("SELECT * FROM synchronizations;").then(syns => {
+            let synchronization: Entities.Synchronization = new Entities.Synchronization();
+            syns.forEach(s => { if (s.entity === "OPTIONS") this.sync(s.entity, s.edition).then(i => synchronization.options = i) });
+            return synchronization;
         }));
     }
 
-    private async dataToSyncUp(sync: Entities.Synchronization) {
+    private async sync(entity: string, edition: string) {
         return this.isReady().then(async () => {
-            return this.database.executeSql(`SELECT id FROM ${sync.entity};`, []).then((data) => { for (let i = 0; i < data.rows.length; i++) sync.ids.push(data.rows.item(i).id); }).then(async () => {
-                return this.database.executeSql(`SELECT * FROM ${sync.entity} WHERE edition > '${sync.edition}';`, []).then((data) => {
-                    for (let i = 0; i < data.rows.length; i++) sync.entities.push(data.rows.item(i));
-                    return sync;
+            let synchronization: Entities.SynchronizationBatch = new Entities.SynchronizationBatch();
+            return this.select(`SELECT * FROM ${entity};`).then(e => {
+                e.forEach(d => {
+                    synchronization.existings.push(d.id);
+                    if (new Date(d.edition) > new Date(edition)) {
+                        synchronization.synchronizations.push(d);
+                        if (new Date(d.edition) > new Date(synchronization.edition)) synchronization.edition = d.edition;
+                    };
                 });
+                return synchronization;
             });
         });
     }
 
-    private async selectAll(table: String) {
-        return this.database.executeSql(`SELECT * FROM ${table};`, []).then((data) => {
+
+    private async select(query: string) {
+        return this.database.executeSql(query, []).then((data) => {
             let lists = [];
             for (let i = 0; i < data.rows.length; i++) lists.push(data.rows.item(i));
             return lists;
@@ -92,7 +97,7 @@ export class DatabaseService {
     }
 
 
-    public async optionsFindAll() { return this.isReady().then(() => this.selectAll("options")); }
+    public async optionsFindAll() { return this.isReady().then(() => this.select("SELECT * FROM options;")); }
 
-    public async profilesFindAll() { return this.isReady().then(() => this.selectAll("profiles")); }
+    public async profilesFindAll() { return this.isReady().then(() => this.select("SELECT * FROM profiles;")); }
 }

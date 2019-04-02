@@ -1,16 +1,18 @@
-import { ToastController, ModalController } from '@ionic/angular';
-import { formatDate, DatePipe } from '@angular/common';
+import { ToastController } from '@ionic/angular';
+import { DatePipe } from '@angular/common';
 
 export class Util {
-    static createToast(message: String, toast: ToastController) {
+    //static URL: string = "http://localhost:8010";
+    static URL: string = "http://knowingserver.herokuapp.com";
+    static createToast(message: string, toast: ToastController) {
         return toast.create({
             closeButtonText: "Ok",
             duration: 3000,
-            message: message.toString(),
+            message: message,
             position: 'bottom',
             showCloseButton: true
         });
     }
-    static now(): String { return new DatePipe("en-US").transform(new Date(), "yyyy-MM-dd hh:mm:ss").toString(); }
-    static search(list: Array<any>, value: String): Array<any> { return list.filter(o => o.toString().toLowerCase().includes(value.toLowerCase())); }
+    static now(): string { return new DatePipe("en-US").transform(new Date(), "yyyy-MM-dd hh:mm:ss"); }
+    static search(list: Array<any>, value: String): Array<any> { return list.filter(o => o.toLowerCase().includes(value.toLowerCase())); }
 }
