@@ -89,15 +89,15 @@ export class DatabaseService {
             this.database.executeSql(`UPDATE synchronizations SET edition='${synchronization.edition}' WHERE entity='OPTIONS';`, []);
             return this.database.executeSql(`DELETE FROM options WHERE id NOT IN(${synchronization.existings});`, []).then(() => {
                 return this.select("SELECT id FROM options").then(d => {
-                    let mock = [1, 3, 5, 7];
+                    let ids = d.map(i => i.id);
                     let values = [];
                     synchronization.synchronizations.forEach(s => {
-                        if (mock.includes(s.id)) {
-                            console.log(`UPDATE options SET action='${s.action}', module='${s.module}', edition='${s.edition}' WHERE id=${s.id};`);
-                        } else { values.push(`(${s.id}, '${s.action}', '${s.module}', '${s.edition}')`) }
+                        if (ids.includes(s.id)) {
+                            this.database.executeSql(`UPDATE options SET action='${s.action}', module='${s.module}', edition='${s.edition}' WHERE id=${s.id};`, []);
+                        } else { values.push(`(${s.id}, '${s.action}', '${s.module}', '${s.edition}')`); }
                     });
                     if (values.length > 0) {
-                        console.log(`INSERT INTO options (id, action, module, edition) VALUES ${values.map(v => v)};`);
+                        this.database.executeSql(`INSERT INTO options (id, action, module, edition) VALUES ${values.map(v => v)};`, []);
                     }
                 });
             });
