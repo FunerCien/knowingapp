@@ -11,8 +11,8 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
           path: ''
         },
         {
-          loadChildren: './pages/roles/roles.module#RolesPageModule',
-          path: 'roles'
+          loadChildren: './pages/profiles/profiles.module#ProfilesPageModule',
+          path: 'profiles'
         }
       ], {
         preloadingStrategy: PreloadAllModules

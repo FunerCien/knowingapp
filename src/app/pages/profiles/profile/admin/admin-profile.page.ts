@@ -1,6 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Entities } from 'src/app/entities/Entities';
-import { Mock } from 'src/app/entities/Mock';
 import { IonSearchbar, ToastController } from '@ionic/angular';
 import { Util } from 'src/app/components/utilities/utility';
 import { FormGroup, FormBuilder } from '@angular/forms';
@@ -41,11 +40,15 @@ export class AdminProfilePage implements OnInit {
     let optionsId: Number[] = new Array();
     this.form = Forms.createProfile(this.profile);
     this.profile.options.forEach(o => optionsId.push(o.id));
-    Mock.options.forEach(o => {
-      o.profiles = [];
-      if (optionsId.includes(o.id)) o.profiles.push(new Entities.Profile());
-      this.allOptions.push(new Entities.Option(o))
-    });
+    for (let index = 0; index < 50; index++) {
+      this.allOptions.push(new Entities.Option());
+      
+    }
+    //Mock.options.forEach(o => {
+    //  o.profiles = [];
+    //  if (optionsId.includes(o.id)) o.profiles.push(new Entities.Profile());
+    //  this.allOptions.push(new Entities.Option(o))
+    //});
     this.cleanOptions();
   }
   searchOptions(searchbar: IonSearchbar) { this.options = Util.search(this.allOptions, searchbar.value); }

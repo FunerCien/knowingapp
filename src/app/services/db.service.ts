@@ -26,7 +26,7 @@ export class DatabaseService {
 
     private async createOptions() {
         return this.database.executeSql("CREATE TABLE IF NOT EXISTS options (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "id INTEGER PRIMARY KEY," +
             "action TEXT NOT NULL," +
             "module TEXT NOT NULL," +
             "edition TEXT NOT NULL," +
@@ -35,7 +35,7 @@ export class DatabaseService {
 
     private async createProfiles() {
         return this.database.executeSql("CREATE TABLE IF NOT EXISTS profiles (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "id INTEGER PRIMARY KEY," +
             "name TEXT NOT NULL," +
             "edition TEXT NOT NULL," +
             "UNIQUE(name));", []);
@@ -63,30 +63,46 @@ export class DatabaseService {
         })
     }
 
-    public async syncUp() {
-        return this.isReady().then(() => this.select("SELECT * FROM synchronizations;").then(syns => {
+    public async syncUp(callback: any) {
+        this.isReady().then(() => this.select("SELECT * FROM synchronizations;").then(syns => {
             let synchronization: Entities.Synchronization = new Entities.Synchronization();
-            syns.forEach(s => { if (s.entity === "OPTIONS") this.sync(s.entity, s.edition).then(i => synchronization.options = i) });
-            return synchronization;
+            syns.forEach(s => { if (s.entity === "OPTIONS") this.sync(s.entity, "2018-04-03 00:00:00").then(i => { synchronization.options = i; callback(synchronization) }) });
         }));
     }
 
     private async sync(entity: string, edition: string) {
         return this.isReady().then(async () => {
             let synchronization: Entities.SynchronizationBatch = new Entities.SynchronizationBatch();
+            synchronization.edition = edition;
             return this.select(`SELECT * FROM ${entity};`).then(e => {
                 e.forEach(d => {
                     synchronization.existings.push(d.id);
-                    if (new Date(d.edition) > new Date(edition)) {
-                        synchronization.synchronizations.push(d);
-                        if (new Date(d.edition) > new Date(synchronization.edition)) synchronization.edition = d.edition;
-                    };
+                    if (new Date(d.edition) > new Date(edition)) synchronization.synchronizations.push(d);
                 });
                 return synchronization;
             });
         });
     }
 
+    public async syncOptions(synchronization: Entities.SynchronizationBatch) {
+        return this.isReady().then(async () => {
+            this.database.executeSql(`UPDATE synchronizations SET edition='${synchronization.edition}' WHERE entity='OPTIONS';`, []);
+            return this.database.executeSql(`DELETE FROM options WHERE id NOT IN(${synchronization.existings});`, []).then(() => {
+                return this.select("SELECT id FROM options").then(d => {
+                    let mock = [1, 3, 5, 7];
+                    let values = [];
+                    synchronization.synchronizations.forEach(s => {
+                        if (mock.includes(s.id)) {
+                            console.log(`UPDATE options SET action='${s.action}', module='${s.module}', edition='${s.edition}' WHERE id=${s.id};`);
+                        } else { values.push(`(${s.id}, '${s.action}', '${s.module}', '${s.edition}')`) }
+                    });
+                    if (values.length > 0) {
+                        console.log(`INSERT INTO options (id, action, module, edition) VALUES ${values.map(v => v)};`);
+                    }
+                });
+            });
+        });
+    }
 
     private async select(query: string) {
         return this.database.executeSql(query, []).then((data) => {
@@ -96,8 +112,8 @@ export class DatabaseService {
         });
     }
 
-
     public async optionsFindAll() { return this.isReady().then(() => this.select("SELECT * FROM options;")); }
 
-    public async profilesFindAll() { return this.isReady().then(() => this.select("SELECT * FROM profiles;")); }
+
+    public async profilesFindAll() { return this.isReady().then(() => this.select("SELECT * FROM synchronizations;")); }
 }

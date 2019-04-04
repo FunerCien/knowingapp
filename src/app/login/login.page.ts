@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { DatabaseService } from '../services/db.service';
 import { SynchroizationService } from '../services/synchronization.service';
+import { Entities } from '../entities/Entities';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +13,7 @@ export class LoginPage {
   }
 
   async crea() {
-    this.dbService.openDB().then(() => this.dbService.syncUp().then((l) => this.service.syncUp(l).subscribe(r => console.log(r))).catch(e => console.log(e)));
+    this.dbService.openDB().then(() => this.dbService.syncUp((s: Entities.Synchronization) => { this.service.syncUp(s).subscribe(r => this.dbService.syncOptions(r.options).then(() => console.log(r))); }));
   }
   async opt() {
     this.dbService.optionsFindAll().then((l) => console.log(l));

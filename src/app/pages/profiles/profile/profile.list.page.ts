@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { IonSearchbar, IonItemSliding, ModalController } from '@ionic/angular';
+import { IonSearchbar, ModalController } from '@ionic/angular';
 import { Util } from 'src/app/components/utilities/utility';
-import { Mock } from 'src/app/entities/Mock';
 import { Entities } from 'src/app/entities/Entities';
 import { AdminProfilePage } from './admin/admin-profile.page';
 
@@ -27,7 +26,7 @@ export class ProfileListPage implements OnInit {
     }
     cleanSearchbar() { this.profiles = this.allProfiles; }
     ngOnInit() {
-        this.allProfiles = Mock.profiles;
+        this.allProfiles = [];
         this.profiles = this.allProfiles;
     }
     search(searchbar: IonSearchbar) { this.profiles = Util.search(this.allProfiles, searchbar.value); }
