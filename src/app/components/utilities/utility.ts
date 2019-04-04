@@ -2,7 +2,6 @@ import { ToastController } from '@ionic/angular';
 import { DatePipe } from '@angular/common';
 
 export class Util {
-    //static URL: string = "http://localhost:8010";
     static URL: string = "http://knowingserver.herokuapp.com";
     static createToast(message: string, toast: ToastController) {
         return toast.create({

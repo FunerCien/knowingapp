@@ -4,13 +4,12 @@ export module Entities {
         id: Number;
         action: string;
         module: string;
-        update: string;
-        profiles: Profile[];
+        edition: string;
         constructor(option?: Option) {
             this.id = option && option.id || null;
             this.action = option && option.action || null;
             this.module = option && option.module || null;
-            this.profiles = option && option.profiles || [];
+            this.edition = option && option.edition || null;
             this.toString = () => {
                 let name: string;
                 if (this.action === "CREATE") name = "Crear "
@@ -24,19 +23,6 @@ export module Entities {
                 else name += "¿?";
                 return name;
             };
-        }
-    }
-    export class Profile {
-        id: Number;
-        title: string;
-        update: string;
-        options: Option[];
-        constructor(profile?: Profile) {
-            this.id = profile && profile.id || null;
-            this.title = profile && profile.title || null;
-            this.update = profile && profile.update || null;
-            this.options = profile && profile.options || [];
-            this.toString = () => this.title;
         }
     }
 
