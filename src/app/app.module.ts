@@ -9,7 +9,7 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { DatabaseService } from './services/db.service';
-import { OptionItemMenuComponent } from './components/option/option-item-menu';
+import { ItemMenuComponent } from './components/menu/item-menu';
 import { SynchroizationService } from './services/synchronization.service';
 import { HttpClientModule } from '@angular/common/http';
 
@@ -17,7 +17,7 @@ import { HttpClientModule } from '@angular/common/http';
   bootstrap: [AppComponent],
   declarations: [
     AppComponent,
-    OptionItemMenuComponent
+    ItemMenuComponent
   ],
   imports: [
     AppRoutingModule,

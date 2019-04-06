@@ -9,25 +9,25 @@ import { AdminProfilePage } from './admin/admin-profile.page';
     templateUrl: 'profile.list.page.html'
 })
 export class ProfileListPage implements OnInit {
-    allProfiles: Entities.Profile[];
-    profiles: Entities.Profile[];
+    //allProfiles: Entities.Profile[];
+    //profiles: Entities.Profile[];
     constructor(public modal: ModalController) { }
-    async adminProfile(profile?: Entities.Profile) {
-        if (profile == null) profile = new Entities.Profile();
-        const modal = await this.modal.create({
-            component: AdminProfilePage,
-            componentProps: {
-                'close': () => modal.dismiss(),
-                'profile': profile
-            },
-            mode: "ios"
-        });
-        modal.present();
-    }
-    cleanSearchbar() { this.profiles = this.allProfiles; }
+    //async adminProfile(profile?: Entities.Profile) {
+      //  if (profile == null) profile = new Entities.Profile();
+        //const modal = await this.modal.create({
+          //  component: AdminProfilePage,
+            //componentProps: {
+           //     'close': () => modal.dismiss(),
+           //     'profile': profile
+           // },
+           // mode: "ios"
+        //});
+        //modal.present();
+    //}
+    //cleanSearchbar() { this.profiles = this.allProfiles; }
     ngOnInit() {
-        this.allProfiles = [];
-        this.profiles = this.allProfiles;
+   //     this.allProfiles = [];
+   //     this.profiles = this.allProfiles;
     }
-    search(searchbar: IonSearchbar) { this.profiles = Util.search(this.allProfiles, searchbar.value); }
+    //search(searchbar: IonSearchbar) { this.profiles = Util.search(this.allProfiles, searchbar.value); }
 }

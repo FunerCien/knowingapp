@@ -45,6 +45,6 @@ export class AppComponent {
   }
   private async syncUp() {
     const loading = await this.loading.create({ message: 'Sincronizando información' });
-    this.dbService.openDB().then(() => loading.dismiss());
+    this.dbService.openDB2().then(() => loading.dismiss());
   }
 }

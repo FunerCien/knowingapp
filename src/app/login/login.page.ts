@@ -13,15 +13,15 @@ export class LoginPage {
   }
 
   async crea() {
-    this.dbService.openDB().then(() => {
-      this.dbService.syncUp((s: Entities.Synchronization) => {
+    /*this.dbService.openDB2().then(() => {
+      this.dbService.syncUp2((s: Entities.Synchronization) => {
         this.service.syncUp(s).subscribe(r => {
           this.dbService.syncOptions(r.options).then(() => console.log(r))
         });
       });
-    });
+    });*/
     //
-    this.dbService.syncUp
+    this.dbService.syncUp();
   }
   async opt() {
     this.dbService.optionsFindAll().then((l) => console.log(l));
