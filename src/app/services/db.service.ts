@@ -47,6 +47,7 @@ export class DatabaseService {
             });
         });
     }
+    private syncOptions(synchronization: Entities.SynchronizationBatch): Observable<any> { return this.syncSpecific(synchronization, "options", (o: Entities.Option[]) => SQL.INSERT_OPTIONS(o), (o: Entities.Option) => SQL.UPDATE_OPTIONS(o)); }
     private syncSpecific(batch: Entities.SynchronizationBatch, table: string, insert: any, update: any): Observable<any> {
         return Observable.create((o: Observer<any>) => {
             forkJoin(
@@ -67,7 +68,7 @@ export class DatabaseService {
             });
         });
     }
-
+    public dropDB(): Observable<any> { return from(this.sql.deleteDatabase({ name: 'knowing.db', iosDatabaseLocation: 'default' })); }
     public openDb(): Observable<any> {
         return Observable.create((o: Observer<any>) => {
             from(this.sql.create({
@@ -79,9 +80,7 @@ export class DatabaseService {
             });
         });
     }
-
     public selectOptions(): Observable<Entities.Option[]> { return this.select(SQL.ALL("options")) }
-
     public syncAll(): Observable<any> {
         return Observable.create((o: Observer<any>) => {
             this.select(SQL.ALL("synchronizations")).subscribe(sync => {
@@ -93,11 +92,5 @@ export class DatabaseService {
                 });
             });
         });
-    }
-
-    public syncOptions(synchronization: Entities.SynchronizationBatch): Observable<any> { return this.syncSpecific(synchronization, "options", (o: Entities.Option[]) => SQL.INSERT_OPTIONS(o), (o: Entities.Option) => SQL.UPDATE_OPTIONS(o)); }
-
-    dropDB() {
-        this.sql.deleteDatabase({ name: 'knowing.db', iosDatabaseLocation: 'default' }).then(() => console.log("OK")).catch(e => console.log(e));
     }
 }
