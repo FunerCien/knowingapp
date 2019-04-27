@@ -1,23 +1,35 @@
 import { Injectable } from '@angular/core';
-import { ToastController, LoadingController } from '@ionic/angular';
+import { LoadingController, ToastController } from '@ionic/angular';
+import { Util } from './utility';
 
 @Injectable()
 export class Message {
-    constructor(private load: LoadingController, private toast: ToastController) { }
+    constructor(private loading: LoadingController, private toast: ToastController) { }
     public async createLoading(message: string) {
-        return await this.load.create({
+        let load = await this.loading.create({
+            animated: true,
+            keyboardClose: true,
             message: message,
-            translucent: true,
-            cssClass: 'custom-class custom-loading'
+            mode: 'ios',
+            showBackdrop: true,
+            spinner: 'dots',
+            translucent: true
         });
+        Util.setLoading(load, ((m: string) => this.presentToast(m)));
+        return load;
     }
     public async presentToast(message: string) {
         let toast = await this.toast.create({
+            animated: true,
             closeButtonText: "Ok",
+            color: 'light',
             duration: 3000,
+            keyboardClose: true,
             message: message,
+            mode: 'ios',
             position: 'bottom',
-            showCloseButton: true
+            showCloseButton: true,
+            translucent: true
         });
         toast.present();
     }

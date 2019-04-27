@@ -6,10 +6,8 @@ import { Util } from '../components/utilities/utility';
 
 @Injectable()
 export class SynchroizationService {
-    private httpHeaders = new HttpHeaders({
-        'Content-Type': 'application/json'
-    });
+    private httpHeaders = new HttpHeaders({ 'Content-Type': 'application/json' });
     private url: string = Util.URL + "/synchronization";
     constructor(private http: HttpClient) { }
-    public syncUp(synchronization: Entities.Synchronization): Observable<Entities.Synchronization> { return this.http.post<Entities.Synchronization>(`${this.url}/all`, synchronization, { headers: this.httpHeaders }); }
+    public syncUp(synchronization: Entities.Synchronization): Observable<Entities.Synchronization> { return this.http.post<Entities.Synchronization>(`${this.url}/all`, synchronization, { headers: this.httpHeaders }) }
 }

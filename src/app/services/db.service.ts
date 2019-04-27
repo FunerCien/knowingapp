@@ -1,15 +1,14 @@
-import { Observable, forkJoin, from, Observer } from 'rxjs';
-import { map, concatMap } from "rxjs/operators";
-import { Injectable } from '@angular/core';
-import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
+import { concatMap, map } from "rxjs/operators";
+import { forkJoin, from, Observable, Observer } from 'rxjs';
 import { Entities } from '../entities/Entities';
-import { SynchroizationService } from './synchronization.service';
+import { Injectable } from '@angular/core';
 import { SQL } from './db.sql';
+import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
+import { SynchroizationService } from './synchronization.service';
 
 @Injectable()
 export class DatabaseService {
     private database: SQLiteObject;
-    private tables = ["options"];
     constructor(private sql: SQLite, private service: SynchroizationService) { }
     private completeObserver(observer: Observer<any>, value: any) {
         observer.next(value);
@@ -19,13 +18,11 @@ export class DatabaseService {
     private createSynchronizations(): Observable<any> { return this.runSQL(SQL.CREATE_SYNCHRONIZATIONS); }
     private insertSynchronizations(): Observable<any> {
         return this.isEmpty("synchronizations").pipe(concatMap(e => {
-            if (e) return this.runSQL(SQL.INSERT_SYNCHRONIZATION(this.tables));
+            if (e) return this.runSQL(SQL.INSERT_SYNCHRONIZATION(["options"]));
             else return [];
         }));
     }
-    private isEmpty(table: string): Observable<Boolean> {
-        return from(this.select(SQL.COUNT(table))).pipe(map(e => !!e[0].empty));
-    }
+    private isEmpty(table: string): Observable<Boolean> { return from(this.select(SQL.COUNT(table))).pipe(map(e => !!e[0].empty)); }
     private runSQL(sql: string): Observable<any> { return from(this.database.executeSql(sql, [])) }
     private select(query: string): Observable<any[]> {
         return this.runSQL(query).pipe(map((data) => {
@@ -50,17 +47,13 @@ export class DatabaseService {
     private syncOptions(synchronization: Entities.SynchronizationBatch): Observable<any> { return this.syncSpecific(synchronization, "options", (o: Entities.Option[]) => SQL.INSERT_OPTIONS(o), (o: Entities.Option) => SQL.UPDATE_OPTIONS(o)); }
     private syncSpecific(batch: Entities.SynchronizationBatch, table: string, insert: any, update: any): Observable<any> {
         return Observable.create((o: Observer<any>) => {
-            forkJoin(
-                this.runSQL(SQL.UPDATE_SYNCHRONIZATION(batch.edition, table)),
-                this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))
-            ).subscribe(() => {
+            forkJoin(this.runSQL(SQL.UPDATE_SYNCHRONIZATION(batch.edition, table)), this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))).subscribe(() => {
                 this.select(SQL.IDS(table)).subscribe(r => {
                     let ids = r.map(i => i.id);
                     let inserts: any[] = new Array();
                     batch.synchronizations.forEach(s => {
-                        if (ids.includes(s.id)) {
-                            this.runSQL(update(s));
-                        } else { inserts.push(s); }
+                        if (ids.includes(s.id)) this.runSQL(update(s));
+                        else inserts.push(s);
                     });
                     if (inserts.length != 0) this.runSQL(insert(inserts)).subscribe(() => this.completeObserver(o, []));
                     else this.completeObserver(o, []);
@@ -71,10 +64,7 @@ export class DatabaseService {
     public dropDB(): Observable<any> { return from(this.sql.deleteDatabase({ name: 'knowing.db', iosDatabaseLocation: 'default' })); }
     public openDb(): Observable<any> {
         return Observable.create((o: Observer<any>) => {
-            from(this.sql.create({
-                location: 'default',
-                name: 'knowing.db'
-            })).subscribe(d => {
+            from(this.sql.create({ location: 'default', name: 'knowing.db' })).subscribe(d => {
                 this.database = d;
                 forkJoin(this.createOptions(), this.createSynchronizations()).subscribe(() => this.insertSynchronizations().subscribe(() => this.completeObserver(o, [])));
             });

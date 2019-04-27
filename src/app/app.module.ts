@@ -1,4 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpErrorInterceptor } from './components/utilities/http-error.interceptor';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { Network } from "@ionic-native/network/ngx";
 import { NgModule } from '@angular/core';
@@ -11,9 +13,8 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { DatabaseService } from './services/db.service';
 import { ItemMenuComponent } from './components/menu/item-menu';
-import { SynchroizationService } from './services/synchronization.service';
-import { HttpClientModule } from '@angular/common/http';
 import { Message } from './components/utilities/message';
+import { SynchroizationService } from './services/synchronization.service';
 
 @NgModule({
   bootstrap: [AppComponent],
@@ -29,16 +30,14 @@ import { Message } from './components/utilities/message';
   ],
   providers: [
     DatabaseService,
+    Message,
     Network,
     SplashScreen,
     SQLite,
     StatusBar,
-    Message,
     SynchroizationService,
-    {
-      provide: RouteReuseStrategy,
-      useClass: IonicRouteStrategy
-    }
+    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ]
 })
 export class AppModule { }
