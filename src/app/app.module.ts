@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { Network } from "@ionic-native/network/ngx";
 import { NgModule } from '@angular/core';
 import { RouteReuseStrategy } from '@angular/router';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
@@ -12,6 +13,7 @@ import { DatabaseService } from './services/db.service';
 import { ItemMenuComponent } from './components/menu/item-menu';
 import { SynchroizationService } from './services/synchronization.service';
 import { HttpClientModule } from '@angular/common/http';
+import { Message } from './components/utilities/message';
 
 @NgModule({
   bootstrap: [AppComponent],
@@ -27,9 +29,11 @@ import { HttpClientModule } from '@angular/common/http';
   ],
   providers: [
     DatabaseService,
+    Network,
     SplashScreen,
     SQLite,
     StatusBar,
+    Message,
     SynchroizationService,
     {
       provide: RouteReuseStrategy,

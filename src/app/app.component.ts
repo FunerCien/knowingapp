@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
-
-import { MenuController, Platform, LoadingController } from '@ionic/angular';
+import { MenuController, Platform } from '@ionic/angular';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
+import { Network } from "@ionic-native/network/ngx";
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { Util } from './components/utilities/utility';
 import { DatabaseService } from './services/db.service';
+import { Message } from './components/utilities/message';
 
 @Component({
   selector: 'app-root',
@@ -20,31 +22,30 @@ export class AppComponent {
 
   constructor(
     private dbService: DatabaseService,
-    private loading: LoadingController,
     private menu: MenuController,
+    private message: Message,
+    private network: Network,
     private platform: Platform,
     private router: Router,
     private splashScreen: SplashScreen,
-    private statusBar: StatusBar
+    private statusBar: StatusBar,
   ) { this.initializeApp(); }
-
-  initializeApp() {
+  public initializeApp() {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
-      //this.syncUp();
     });
   }
-  ngOnInit() {
+  public ngOnInit() {
+    Util.setNetworkStatus(this.network.type != "none");
+    this.dbService.openDb().subscribe();
+    this.network.onConnect().subscribe(() => Util.setNetworkStatus(true));
+    this.network.onDisconnect().subscribe(() => Util.setNetworkStatus(false));
     this.router.events.subscribe((event: RouterEvent) => {
       if (event instanceof NavigationEnd) {
         this.menu.enable(event.url !== '/');
         this.options.map(o => o['active'] = (event.url.split("/")[1] === o.url.split("/")[1]));
       }
     });
-  }
-  private async syncUp() {
-    const loading = await this.loading.create({ message: 'Sincronizando información' });
-    
   }
 }

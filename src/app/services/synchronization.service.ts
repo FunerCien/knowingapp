@@ -11,5 +11,5 @@ export class SynchroizationService {
     });
     private url: string = Util.URL + "/synchronization";
     constructor(private http: HttpClient) { }
-    syncUp(synchronization: Entities.Synchronization): Observable<Entities.Synchronization> { return this.http.post<Entities.Synchronization>(`${this.url}/all`, synchronization, { headers: this.httpHeaders }); }
+    public syncUp(synchronization: Entities.Synchronization): Observable<Entities.Synchronization> { return this.http.post<Entities.Synchronization>(`${this.url}/all`, synchronization, { headers: this.httpHeaders }); }
 }

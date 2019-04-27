@@ -1,23 +1,28 @@
 import { Component } from '@angular/core';
 import { DatabaseService } from '../services/db.service';
+import { Router } from '@angular/router';
+import { Message } from '../components/utilities/message';
+import { Util } from '../components/utilities/utility';
+import { Network } from '@ionic-native/network/ngx';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html'
 })
 export class LoginPage {
-  list = new Array();
-  constructor(private dbService: DatabaseService) {
+  public jj = this.n.type;
+  constructor(private dbService: DatabaseService, private n: Network, private message: Message, private router: Router) {
   }
-
-  crea() { this.dbService.openDb().subscribe(() => console.log("Created")); }
-
-  syn() {
-    this.dbService.syncAll().subscribe(() => console.log("Synchronizated"));
+  public async walkInto() {
+    if (Util.getNetworkStatus()) {
+      let load = await this.message.createLoading("");
+      load.present();
+      this.dbService.syncAll().subscribe(() => {
+        load.dismiss();
+        this.router.navigateByUrl("/profiles");
+      });
+    } else {
+      this.message.presentToast("¡Necesitamos conectarnos!");
+    }
   }
-
-  opt() { this.dbService.selectOptions().subscribe(s => console.log(s)) }
-
-  de() { this.dbService.dropDB(); }
-
 }

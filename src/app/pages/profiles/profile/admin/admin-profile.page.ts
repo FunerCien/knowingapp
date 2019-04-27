@@ -26,8 +26,6 @@ export class AdminProfilePage implements OnInit {
   cleanOptions() { this.options = this.allOptions; }
   async saveProfile() {
     if (this.form.invalid) {
-      let toast = await Util.createToast("El nombre es necesario", this.toast);
-      toast.present();
     } else {
    //   this.profile = Forms.setBasicDataToProfile(this.profile, this.form);
     //  let toast = await Util.createToast( this.profile + " guardado.", this.toast);
