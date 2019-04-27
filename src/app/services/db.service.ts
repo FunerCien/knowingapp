@@ -1,172 +1,103 @@
-import { BehaviorSubject, Observable, forkJoin, from, Observer, concat } from 'rxjs';
+import { Observable, forkJoin, from, Observer } from 'rxjs';
 import { map, concatMap } from "rxjs/operators";
 import { Injectable } from '@angular/core';
-import { Platform } from '@ionic/angular';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 import { Entities } from '../entities/Entities';
+import { SynchroizationService } from './synchronization.service';
+import { SQL } from './db.sql';
 
 @Injectable()
 export class DatabaseService {
     private database: SQLiteObject;
-    private dbReady = new BehaviorSubject<boolean>(false);
-    private tables = ["OPTIONS"];
-    constructor(private platform: Platform, private sql: SQLite) { }
-    private createOptions(): Observable<any> {
-        return from(this.database.executeSql(`CREATE TABLE IF NOT EXISTS options (
-            id INTEGER PRIMARY KEY,
-            action TEXT NOT NULL,
-            module TEXT NOT NULL,
-            edition TEXT NOT NULL,
-            UNIQUE(action, module));`, []));
+    private tables = ["options"];
+    constructor(private sql: SQLite, private service: SynchroizationService) { }
+    private completeObserver(observer: Observer<any>, value: any) {
+        observer.next(value);
+        observer.complete();
     }
-    private createSynchronizations(): Observable<any> {
-        return concat(from(this.database.executeSql(`CREATE TABLE IF NOT EXISTS synchronizations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            entity TEXT NOT NULL,
-            edition TEXT NOT NULL);`, [])), this.insertSynchronizations());//INSERT NO EJECUTA
-    }
+    private createOptions(): Observable<any> { return this.runSQL(SQL.CREATE_OPTIONS); }
+    private createSynchronizations(): Observable<any> { return this.runSQL(SQL.CREATE_SYNCHRONIZATIONS); }
     private insertSynchronizations(): Observable<any> {
         return this.isEmpty("synchronizations").pipe(concatMap(e => {
-            console.log(e);
-            if (e) return <Observable<any>>from((this.database.executeSql(`INSERT INTO synchronizations(entity,edition)
-              VALUES ${this.tables.map(t => `('${t}','2000-01-01 00:00:00')`)}`, [])));
-            // AVERIGUAR RESPUESTA PARA ELSE
+            if (e) return this.runSQL(SQL.INSERT_SYNCHRONIZATION(this.tables));
+            else return [];
         }));
     }
     private isEmpty(table: string): Observable<Boolean> {
-        return from(this.select(`SELECT COUNT(0)=0 empty FROM ${table};`)).pipe(map(e => !!e[0].empty));
+        return from(this.select(SQL.COUNT(table))).pipe(map(e => !!e[0].empty));
     }
-    private openDb(): Observable<any> {
+    private runSQL(sql: string): Observable<any> { return from(this.database.executeSql(sql, [])) }
+    private select(query: string): Observable<any[]> {
+        return this.runSQL(query).pipe(map((data) => {
+            let lists = [];
+            for (let i = 0; i < data.rows.length; i++) lists.push(data.rows.item(i));
+            return lists;
+        }));
+    }
+    private selectSynchronizable(table: string, edition: string): Observable<Entities.SynchronizationBatch> {
+        return Observable.create((o: Observer<Entities.SynchronizationBatch>) => {
+            this.select(SQL.ALL(table)).subscribe(row => {
+                let batch: Entities.SynchronizationBatch = new Entities.SynchronizationBatch();
+                batch.edition = edition;
+                row.forEach(r => {
+                    batch.existings.push(r.id)
+                    if (new Date(r.edition) > new Date(edition)) batch.synchronizations.push(r);
+                });
+                this.completeObserver(o, batch);
+            });
+        });
+    }
+    private syncSpecific(batch: Entities.SynchronizationBatch, table: string, insert: any, update: any): Observable<any> {
+        return Observable.create((o: Observer<any>) => {
+            forkJoin(
+                this.runSQL(SQL.UPDATE_SYNCHRONIZATION(batch.edition, table)),
+                this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))
+            ).subscribe(() => {
+                this.select(SQL.IDS(table)).subscribe(r => {
+                    let ids = r.map(i => i.id);
+                    let inserts: any[] = new Array();
+                    batch.synchronizations.forEach(s => {
+                        if (ids.includes(s.id)) {
+                            this.runSQL(update(s));
+                        } else { inserts.push(s); }
+                    });
+                    if (inserts.length != 0) this.runSQL(insert(inserts)).subscribe(() => this.completeObserver(o, []));
+                    else this.completeObserver(o, []);
+                });
+            });
+        });
+    }
+
+    public openDb(): Observable<any> {
         return Observable.create((o: Observer<any>) => {
             from(this.sql.create({
                 location: 'default',
                 name: 'knowing.db'
             })).subscribe(d => {
                 this.database = d;
-                this.dbReady.next(true);
-                o.next(forkJoin(this.createOptions(), this.createSynchronizations()));
-                o.complete();
+                forkJoin(this.createOptions(), this.createSynchronizations()).subscribe(() => this.insertSynchronizations().subscribe(() => this.completeObserver(o, [])));
             });
         });
     }
-    private select(query: string): Observable<any[]> {
-        return from(this.database.executeSql(query, [])).pipe(map((data) => {
-            let lists = [];
-            for (let i = 0; i < data.rows.length; i++) lists.push(data.rows.item(i));
-            return lists;
-        }));
-    }
-    syncUp(): any {
-        this.openDb().subscribe(l => console.log(l));
 
-        return forkJoin(this.openDb());
-    }
+    public selectOptions(): Observable<Entities.Option[]> { return this.select(SQL.ALL("options")) }
 
-    //**TODO: MIGRARA A OBSERVABLES */
-
-    async openDB2(): Promise<any> {
-        return this.platform.ready().then(() => {
-            this.sql.create({ location: 'default', name: 'knowing.db' }).then(async (db: SQLiteObject) => {
-                this.database = db;
-                return this.createOptions2().then(async () => {
-                    return this.createProfiles().then(async () => {
-                        return this.createSynchronizations2().then(() => this.dbReady.next(true));
-                    });
+    public syncAll(): Observable<any> {
+        return Observable.create((o: Observer<any>) => {
+            this.select(SQL.ALL("synchronizations")).subscribe(sync => {
+                let options = sync.filter(s => s.entity == "options")[0];
+                forkJoin(this.selectSynchronizable(options.entity, options.edition)).subscribe(f => {
+                    let synchronization: Entities.Synchronization = new Entities.Synchronization();
+                    synchronization.options = f[0];
+                    this.service.syncUp(synchronization).subscribe((d => this.syncOptions(d.options).subscribe(() => this.completeObserver(o, []))));
                 });
             });
         });
     }
 
-    private async createOptions2() {
-        return this.database.executeSql("CREATE TABLE IF NOT EXISTS options (" +
-            "id INTEGER PRIMARY KEY," +
-            "action TEXT NOT NULL," +
-            "module TEXT NOT NULL," +
-            "edition TEXT NOT NULL," +
-            "UNIQUE(action, module));", []);
+    public syncOptions(synchronization: Entities.SynchronizationBatch): Observable<any> { return this.syncSpecific(synchronization, "options", (o: Entities.Option[]) => SQL.INSERT_OPTIONS(o), (o: Entities.Option) => SQL.UPDATE_OPTIONS(o)); }
+
+    dropDB() {
+        this.sql.deleteDatabase({ name: 'knowing.db', iosDatabaseLocation: 'default' }).then(() => console.log("OK")).catch(e => console.log(e));
     }
-
-    private async createProfiles() {
-        return this.database.executeSql("CREATE TABLE IF NOT EXISTS profiles (" +
-            "id INTEGER PRIMARY KEY," +
-            "name TEXT NOT NULL," +
-            "edition TEXT NOT NULL," +
-            "UNIQUE(name));", []);
-    }
-
-    private async createSynchronizations2() {
-        return this.database.executeSql("CREATE TABLE IF NOT EXISTS synchronizations (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-            "entity TEXT NOT NULL," +
-            "edition TEXT NOT NULL);", []).then(async () => {
-                return this.database.executeSql("SELECT COUNT(0) size FROM synchronizations;", []).then(e => {
-                    if (e.rows.item(0).size === 0) {
-                        return this.database.executeSql("INSERT INTO synchronizations(entity, edition)" +
-                            "VALUES ('OPTIONS', '2000-01-01 00:00:00')," +
-                            "('PROFILES', '2000-01-01 00:00:00');", []);
-                    }
-                });
-            });
-    }
-
-    private isReady() {
-        return new Promise((resolve) => {
-            if (this.dbReady.getValue()) resolve();
-            else this.dbReady.subscribe((ready) => { if (ready) resolve() });
-        })
-    }
-
-    public async syncUp2(callback: any) {
-        this.isReady().then(() => this.select2("SELECT * FROM synchronizations;").then(syns => {
-            let synchronization: Entities.Synchronization = new Entities.Synchronization();
-            syns.forEach(s => { if (s.entity === "OPTIONS") this.sync(s.entity, "2018-04-03 00:00:00").then(i => { synchronization.options = i; callback(synchronization) }) });
-        }));
-    }
-
-    private async sync(entity: string, edition: string) {
-        return this.isReady().then(async () => {
-            let synchronization: Entities.SynchronizationBatch = new Entities.SynchronizationBatch();
-            synchronization.edition = edition;
-            return this.select2(`SELECT * FROM ${entity};`).then(e => {
-                e.forEach(d => {
-                    synchronization.existings.push(d.id);
-                    if (new Date(d.edition) > new Date(edition)) synchronization.synchronizations.push(d);
-                });
-                return synchronization;
-            });
-        });
-    }
-
-    public async syncOptions(synchronization: Entities.SynchronizationBatch) {
-        return this.isReady().then(async () => {
-            this.database.executeSql(`UPDATE synchronizations SET edition='${synchronization.edition}' WHERE entity='OPTIONS';`, []);
-            return this.database.executeSql(`DELETE FROM options WHERE id NOT IN(${synchronization.existings});`, []).then(() => {
-                return this.select2("SELECT id FROM options").then(d => {
-                    let ids = d.map(i => i.id);
-                    let values = [];
-                    synchronization.synchronizations.forEach(s => {
-                        if (ids.includes(s.id)) {
-                            this.database.executeSql(`UPDATE options SET action='${s.action}', module='${s.module}', edition='${s.edition}' WHERE id=${s.id};`, []);
-                        } else { values.push(`(${s.id}, '${s.action}', '${s.module}', '${s.edition}')`); }
-                    });
-                    if (values.length > 0) {
-                        this.database.executeSql(`INSERT INTO options (id, action, module, edition) VALUES ${values.map(v => v)};`, []);
-                    }
-                });
-            });
-        });
-    }
-
-    private async select2(query: string) {
-        return this.database.executeSql(query, []).then((data) => {
-            let lists = [];
-            for (let i = 0; i < data.rows.length; i++) lists.push(data.rows.item(i));
-            return lists;
-        });
-    }
-
-    public async optionsFindAll() { return this.isReady().then(() => this.select2("SELECT * FROM options;")); }
-
-
-    public async profilesFindAll() { return this.isReady().then(() => this.select2("SELECT * FROM synchronizations;")); }
 }

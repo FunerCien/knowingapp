@@ -38,7 +38,7 @@ export module Entities {
         synchronizations: any[];
         existings: Number[];
         constructor(synchronization?: SynchronizationBatch) {
-            this.edition = synchronization && synchronization.edition || "2000-01-01 00:00:00";
+            this.edition = synchronization && synchronization.edition || "1999-12-31 00:00:00";
             this.synchronizations = synchronization && synchronization.synchronizations || [];
             this.existings = synchronization && synchronization.existings || [];
         }
