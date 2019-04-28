@@ -8,9 +8,9 @@ export class Util {
         this.LOADING = loading;
         this.TOAST = toast;
     }
-    public static dismissServerError(): HTMLIonLoadingElement {
+    public static dismissServerError() {
         this.TOAST("¡Error en el servidor!");
-        return this.LOADING
+        this.LOADING.dismiss();
     }
     public static URL: string = "http://knowingserver.herokuapp.com";
     public static getNetworkStatus(): Boolean { return localStorage.getItem(this.NETWORK_STATUS) === "Y" }

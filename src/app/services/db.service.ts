@@ -78,7 +78,7 @@ export class DatabaseService {
                 forkJoin(this.selectSynchronizable(options.entity, options.edition)).subscribe(f => {
                     let synchronization: Entities.Synchronization = new Entities.Synchronization();
                     synchronization.options = f[0];
-                    this.service.syncUp(synchronization).subscribe((d => this.syncOptions(d.options).subscribe(() => this.completeObserver(o, []))));
+                    this.service.syncAll(synchronization).subscribe((d => this.syncOptions(d.options).subscribe(() => this.completeObserver(o, []))));
                 });
             });
         });

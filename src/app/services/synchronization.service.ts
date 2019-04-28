@@ -9,5 +9,6 @@ export class SynchroizationService {
     private httpHeaders = new HttpHeaders({ 'Content-Type': 'application/json' });
     private url: string = Util.URL + "/synchronization";
     constructor(private http: HttpClient) { }
-    public syncUp(synchronization: Entities.Synchronization): Observable<Entities.Synchronization> { return this.http.post<Entities.Synchronization>(`${this.url}/all`, synchronization, { headers: this.httpHeaders }) }
+    public syncAll(synchronization: Entities.Synchronization): Observable<Entities.Synchronization> { return this.http.post<Entities.Synchronization>(`${this.url}/all`, synchronization, { headers: this.httpHeaders }) }
+    public syncSpecific(table: string, batch: Entities.SynchronizationBatch): Observable<Entities.SynchronizationBatch> { return this.http.post<Entities.SynchronizationBatch>(`${this.url}/${table}`, batch, { headers: this.httpHeaders }) }
 }
