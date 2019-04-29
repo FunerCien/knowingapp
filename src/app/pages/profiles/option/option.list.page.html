@@ -11,9 +11,8 @@
 <ion-content>
   <ion-searchbar animated mode="ios" (keyup)="search(iS)" (ionClear)="cleanSearchbar()" #iS></ion-searchbar>
   <ion-list lines="none">
-    <ion-item *ngFor="let option of options" (click)="showPermits(option.id)">
+    <ion-item *ngFor="let option of options">
       <ion-label>{{option}}</ion-label>
-      <ion-icon mode="ios" name="arrow-back" slot="end"></ion-icon>
     </ion-item>
   </ion-list>
 </ion-content>

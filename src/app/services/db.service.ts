@@ -2,14 +2,16 @@ import { concatMap, map } from "rxjs/operators";
 import { forkJoin, from, Observable, Observer } from 'rxjs';
 import { Entities } from '../entities/Entities';
 import { Injectable } from '@angular/core';
-import { SQL } from './db.sql';
+import { Message } from '../components/utilities/message';
+import { SQL, Table } from './db.sql';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 import { SynchroizationService } from './synchronization.service';
+import { Util } from '../components/utilities/utility';
 
 @Injectable()
 export class DatabaseService {
     private database: SQLiteObject;
-    constructor(private sql: SQLite, private service: SynchroizationService) { }
+    constructor(private message: Message, private sql: SQLite, private service: SynchroizationService) { }
     private completeObserver(observer: Observer<any>, value: any) {
         observer.next(value);
         observer.complete();
@@ -17,12 +19,12 @@ export class DatabaseService {
     private createOptions(): Observable<any> { return this.runSQL(SQL.CREATE_OPTIONS); }
     private createSynchronizations(): Observable<any> { return this.runSQL(SQL.CREATE_SYNCHRONIZATIONS); }
     private insertSynchronizations(): Observable<any> {
-        return this.isEmpty("synchronizations").pipe(concatMap(e => {
-            if (e) return this.runSQL(SQL.INSERT_SYNCHRONIZATION(["options"]));
+        return this.isEmpty(Table.synchronizations).pipe(concatMap(e => {
+            if (e) return this.runSQL(SQL.INSERT_SYNCHRONIZATION([Table.options]));
             else return [];
         }));
     }
-    private isEmpty(table: string): Observable<Boolean> { return from(this.select(SQL.COUNT(table))).pipe(map(e => !!e[0].empty)); }
+    private isEmpty(table: Table): Observable<Boolean> { return from(this.select(SQL.COUNT(table))).pipe(map(e => !!e[0].empty)); }
     private runSQL(sql: string): Observable<any> { return from(this.database.executeSql(sql, [])) }
     private select(query: string): Observable<any[]> {
         return this.runSQL(query).pipe(map((data) => {
@@ -31,7 +33,7 @@ export class DatabaseService {
             return lists;
         }));
     }
-    private selectSynchronizable(table: string, edition: string): Observable<Entities.SynchronizationBatch> {
+    private selectSynchronizable(table: Table, edition: string): Observable<Entities.SynchronizationBatch> {
         return Observable.create((o: Observer<Entities.SynchronizationBatch>) => {
             this.select(SQL.ALL(table)).subscribe(row => {
                 let batch: Entities.SynchronizationBatch = new Entities.SynchronizationBatch();
@@ -44,8 +46,8 @@ export class DatabaseService {
             });
         });
     }
-    private syncOptions(synchronization: Entities.SynchronizationBatch): Observable<any> { return this.syncSpecific(synchronization, "options", (o: Entities.Option[]) => SQL.INSERT_OPTIONS(o), (o: Entities.Option) => SQL.UPDATE_OPTIONS(o)); }
-    private syncSpecific(batch: Entities.SynchronizationBatch, table: string, insert: any, update: any): Observable<any> {
+    private syncOptions(synchronization: Entities.SynchronizationBatch): Observable<any> { return this.syncSpecific(synchronization, Table.options, (o: Entities.Option[]) => SQL.INSERT_OPTIONS(o), (o: Entities.Option) => SQL.UPDATE_OPTIONS(o)); }
+    private syncSpecific(batch: Entities.SynchronizationBatch, table: Table, insert: any, update: any): Observable<any> {
         return Observable.create((o: Observer<any>) => {
             forkJoin(this.runSQL(SQL.UPDATE_SYNCHRONIZATION(batch.edition, table)), this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))).subscribe(() => {
                 this.select(SQL.IDS(table)).subscribe(r => {
@@ -61,20 +63,32 @@ export class DatabaseService {
             });
         });
     }
-    public dropDB(): Observable<any> { return from(this.sql.deleteDatabase({ name: 'knowing.db', iosDatabaseLocation: 'default' })); }
+    public dropDB(): Observable<any> { return from(this.sql.deleteDatabase({ name: SQL.DATABASE, iosDatabaseLocation: SQL.LOCATION })); }
     public openDb(): Observable<any> {
         return Observable.create((o: Observer<any>) => {
-            from(this.sql.create({ location: 'default', name: 'knowing.db' })).subscribe(d => {
+            from(this.sql.create({ location: SQL.LOCATION, name: SQL.DATABASE })).subscribe(d => {
                 this.database = d;
                 forkJoin(this.createOptions(), this.createSynchronizations()).subscribe(() => this.insertSynchronizations().subscribe(() => this.completeObserver(o, [])));
             });
         });
     }
-    public selectOptions(): Observable<Entities.Option[]> { return this.select(SQL.ALL("options")) }
+    public async selectAll(table: Table, callback: any) {
+        if (Util.getNetworkStatus()) {
+            let loading = await this.message.createLoading();
+            loading.onDidDismiss().then(() => this.select(SQL.ALL(Table.options)).subscribe(data => callback(data)));
+            loading.present();
+            this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
+                let options = sync.filter(s => s.entity == table)[0];
+                this.selectSynchronizable(options.entity, options.edition).subscribe(f => {
+                    this.service.syncSpecific(table, f[0]).subscribe((s => this.syncOptions(s).subscribe(() => loading.dismiss())));
+                });
+            });
+        } else { this.select(SQL.ALL(Table.options)).subscribe(data => callback(data)); }
+    }
     public syncAll(): Observable<any> {
         return Observable.create((o: Observer<any>) => {
-            this.select(SQL.ALL("synchronizations")).subscribe(sync => {
-                let options = sync.filter(s => s.entity == "options")[0];
+            this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
+                let options = sync.filter(s => s.entity == Table.options)[0];
                 forkJoin(this.selectSynchronizable(options.entity, options.edition)).subscribe(f => {
                     let synchronization: Entities.Synchronization = new Entities.Synchronization();
                     synchronization.options = f[0];

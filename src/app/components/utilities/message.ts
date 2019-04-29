@@ -5,7 +5,7 @@ import { Util } from './utility';
 @Injectable()
 export class Message {
     constructor(private loading: LoadingController, private toast: ToastController) { }
-    public async createLoading(message: string) {
+    public async createLoading(message?: string) {
         let load = await this.loading.create({
             animated: true,
             keyboardClose: true,

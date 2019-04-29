@@ -11,16 +11,17 @@ export class SQL {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         entity TEXT NOT NULL,
         edition TEXT NOT NULL);`;
-
-    static ALL(table: string) { return `SELECT * FROM ${table};`; }
-    static COUNT(table: string): string { return `SELECT COUNT(0)=0 empty FROM ${table};`; }
-    static DELETE_ID_NOT_IN(ids: Number[], table: string) { return `DELETE FROM ${table} WHERE id NOT IN(${ids});` }
-    static IDS(table: string): string { return `SELECT id FROM ${table};`; }
+    static DATABASE: string = 'knowing.db';
+    static LOCATION: string = 'default';
+    static ALL(table: Table) { return `SELECT * FROM ${table};`; }
+    static COUNT(table: Table): string { return `SELECT COUNT(0)=0 empty FROM ${table};`; }
+    static DELETE_ID_NOT_IN(ids: Number[], table: Table) { return `DELETE FROM ${table} WHERE id NOT IN(${ids});` }
+    static IDS(table: Table): string { return `SELECT id FROM ${table};`; }
     static INSERT_OPTIONS(options: Entities.Option[]) {
         return `INSERT INTO options (id, action, module, edition) 
             VALUES ${options.map(o => `(${o.id}, '${o.action}', '${o.module}', '${o.edition}')`)};`;
     }
-    static INSERT_SYNCHRONIZATION(tables: string[]): string {
+    static INSERT_SYNCHRONIZATION(tables: Table[]): string {
         return `INSERT INTO synchronizations(entity,edition) 
             VALUES ${tables.map(t => `('${t}','2000-01-01 00:00:00')`)};`
     }
@@ -29,9 +30,14 @@ export class SQL {
             SET action='${option.action}', module='${option.module}', edition='${option.edition}' 
             WHERE id=${option.id};`
     }
-    static UPDATE_SYNCHRONIZATION(edition: string, table: string): string {
+    static UPDATE_SYNCHRONIZATION(edition: string, table: Table): string {
         return `UPDATE synchronizations 
             SET edition='${edition}' 
             WHERE entity='${table}';`
     }
+}
+
+export enum Table {
+    options = "options",
+    synchronizations = "synchronizations"
 }
