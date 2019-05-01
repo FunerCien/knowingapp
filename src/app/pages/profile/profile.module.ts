@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProfileListPage } from './profile.list.page';
 import { AdminProfilePage } from './admin/admin-profile.page';
+import { Message } from 'src/app/components/utilities/message';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { AdminProfilePage } from './admin/admin-profile.page';
       component: ProfileListPage,
       path: ''
     }])
-  ]
+  ],
+  providers: [Message]
 })
 export class ProfilePageModule { }

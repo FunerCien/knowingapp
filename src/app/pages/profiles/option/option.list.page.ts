@@ -7,8 +7,8 @@ import { Table } from 'src/app/services/db.sql';
 
 @Component({ selector: 'app-option-list', templateUrl: 'option.list.page.html' })
 export class OptionListPage {
-    public allOptions: Entities.Option[] = new Array();
-    public options: Entities.Option[] = new Array();
+    public allOptions: Entities.Profile[] = new Array();
+    public options: Entities.Profile[] = new Array();
     constructor(private modal: ModalController, private dbService: DatabaseService) { }
     /* async showPermits(optionId: Number) {
          let modal = await this.modal.create({
@@ -18,9 +18,9 @@ export class OptionListPage {
      }*/
     public cleanSearchbar() { this.options = this.allOptions; }
     public ionViewWillEnter() {
-        this.dbService.selectAll(Table.options, ((op: Entities.Option[]) => {
+        this.dbService.selectAll(Table.profiles, ((op: Entities.Profile[]) => {
             this.allOptions = new Array();
-            op.forEach(o => this.allOptions.push(new Entities.Option(o)));
+            op.forEach(o => this.allOptions.push(new Entities.Profile(o)));
             this.options = this.allOptions;
         }));
     }

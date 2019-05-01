@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { LoadingController, ToastController } from '@ionic/angular';
+import { LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { Util } from './utility';
+import { ComponentRef } from '@ionic/core';
 
 @Injectable()
 export class Message {
-    constructor(private loading: LoadingController, private toast: ToastController) { }
+    constructor(private loading: LoadingController, private modal: ModalController, private toast: ToastController) { }
     public async createLoading(message?: string) {
         let load = await this.loading.create({
             animated: true,
@@ -17,6 +18,18 @@ export class Message {
         });
         Util.setLoading(load, ((m: string) => this.presentToast(m)));
         return load;
+    }
+    public async presentModal(component: ComponentRef, props: any, dismiss: any) {
+        let modal = await this.modal.create({
+            animated: true,
+            component: component,
+            componentProps: props,
+            keyboardClose: true,
+            mode: "ios",
+            showBackdrop: true
+        });
+        modal.onDidDismiss().then(() => dismiss());
+        return modal;
     }
     public async presentToast(message: string) {
         let toast = await this.toast.create({

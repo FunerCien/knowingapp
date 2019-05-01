@@ -26,7 +26,7 @@ import { RouterModule } from '@angular/router';
         path: 'option'
       }, {
         children: [{
-          loadChildren: './profile/profile.module#ProfilePageModule',
+          loadChildren: '../profile/profile.module#ProfilePageModule',
           path: ''
         }],
         path: 'profile'

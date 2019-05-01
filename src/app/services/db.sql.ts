@@ -7,6 +7,11 @@ export class SQL {
         module TEXT NOT NULL,
         edition TEXT NOT NULL,
         UNIQUE(action, module));`;
+    static CREATE_PROFILES: string = `CREATE TABLE IF NOT EXISTS profiles(
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        edition TEXT NOT NULL,
+        UNIQUE(name));`;
     static CREATE_SYNCHRONIZATIONS: string = `CREATE TABLE IF NOT EXISTS synchronizations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         entity TEXT NOT NULL,
@@ -21,7 +26,11 @@ export class SQL {
         return `INSERT INTO options (id, action, module, edition) 
             VALUES ${options.map(o => `(${o.id}, '${o.action}', '${o.module}', '${o.edition}')`)};`;
     }
-    static INSERT_SYNCHRONIZATION(tables: Table[]): string {
+    static INSERT_PROFILES(profiles: Entities.Profile[]) {
+        return `INSERT INTO profiles (id, name, edition) 
+            VALUES ${profiles.map(o => `(${o.id}, '${o.name}', '${o.edition}')`)};`;
+    }
+    static INSERT_SYNCHRONIZATION(tables: string[]): string {
         return `INSERT INTO synchronizations(entity,edition) 
             VALUES ${tables.map(t => `('${t}','2000-01-01 00:00:00')`)};`
     }
@@ -29,6 +38,11 @@ export class SQL {
         return `UPDATE options 
             SET action='${option.action}', module='${option.module}', edition='${option.edition}' 
             WHERE id=${option.id};`
+    }
+    static UPDATE_PROFILES(profile: Entities.Profile) {
+        return `UPDATE profiles 
+            SET name='${profile.name}', edition='${profile.edition}' 
+            WHERE id=${profile.id};`
     }
     static UPDATE_SYNCHRONIZATION(edition: string, table: Table): string {
         return `UPDATE synchronizations 
@@ -39,5 +53,6 @@ export class SQL {
 
 export enum Table {
     options = "options",
+    profiles = "profiles",
     synchronizations = "synchronizations"
 }

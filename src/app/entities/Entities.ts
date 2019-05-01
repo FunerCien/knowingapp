@@ -17,8 +17,9 @@ export module Entities {
                 else if (this.action === "UPDATE") name = "Actualizar "
                 else if (this.action === "DELETE") name = "Eliminar "
                 else name = "¿?";
-                if (this.module === "OPTIONS") name += "opciones"
-                else if (this.module === "PROFILES") name += "perfiles"
+                if (this.module === "PROFILES") name += "perfiles"
+                else if (this.module === "SUPERVISIONS") name += "supervisiones"
+                else if (this.module === "OPTIONS") name += "opciones"
                 else if (this.module === "PERMITS") name += "permisos"
                 else name += "¿?";
                 return name;
@@ -26,10 +27,24 @@ export module Entities {
         }
     }
 
+    export class Profile {
+        id: Number;
+        name: string;
+        edition: string;
+        constructor(profile?: Profile) {
+            this.id = profile && profile.id || null;
+            this.name = profile && profile.name || null;
+            this.edition = profile && profile.edition || null;
+            this.toString = () => this.name;
+        }
+    }
+
     export class Synchronization {
         options: SynchronizationBatch = new SynchronizationBatch();
+        profiles: SynchronizationBatch = new SynchronizationBatch();
         constructor(synchronization?: Synchronization) {
             this.options = synchronization && synchronization.options || new SynchronizationBatch();
+            this.profiles = synchronization && synchronization.profiles || new SynchronizationBatch();
         }
     }
 
