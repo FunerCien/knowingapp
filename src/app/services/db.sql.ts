@@ -2,13 +2,13 @@ import { Entities } from '../entities/Entities';
 
 export class SQL {
     static CREATE_OPTIONS: string = `CREATE TABLE IF NOT EXISTS options(
-        id INTEGER PRIMARY KEY,
+        id INTEGER,
         action TEXT NOT NULL,
         module TEXT NOT NULL,
         edition TEXT NOT NULL,
         UNIQUE(action, module));`;
     static CREATE_PROFILES: string = `CREATE TABLE IF NOT EXISTS profiles(
-        id INTEGER PRIMARY KEY,
+        id INTEGER,
         name TEXT NOT NULL,
         edition TEXT NOT NULL,
         UNIQUE(name));`;

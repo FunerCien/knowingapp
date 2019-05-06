@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { LoginPage } from './login.page';
-import { ProfilesPageModule } from '../pages/profiles/profiles.module';
+import { PermitsPageModule } from '../components/menu/permits/permits.module';
 
 @NgModule({
   declarations: [LoginPage],
@@ -12,7 +12,7 @@ import { ProfilesPageModule } from '../pages/profiles/profiles.module';
     CommonModule,
     FormsModule,
     IonicModule,
-    ProfilesPageModule,
+    PermitsPageModule,
     RouterModule.forChild([{
       component: LoginPage,
       path: ''

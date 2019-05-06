@@ -8,8 +8,12 @@ export class Util {
         this.LOADING = loading;
         this.TOAST = toast;
     }
-    public static dismissServerError() {
-        this.TOAST("¡Error en el servidor!");
+    public static dismissServerError(message: string, severity: string) {
+        let color: string;
+        if (severity == "INFORMATION") color = "light";
+        else if (severity == "WARNING") color = "warning";
+        else color = "danger";
+        this.TOAST(message, color);
         this.LOADING.dismiss();
     }
     public static URL: string = "http://knowingserver.herokuapp.com";

@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { PreloadAllModules, RouterModule } from '@angular/router';
 
 @NgModule({
   exports: [RouterModule],
@@ -11,8 +11,8 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
           path: ''
         },
         {
-          loadChildren: './pages/profiles/profiles.module#ProfilesPageModule',
-          path: 'profiles'
+          loadChildren: './components/menu/permits/permits.module#PermitsPageModule',
+          path: 'permits'
         }
       ], {
         preloadingStrategy: PreloadAllModules

@@ -16,7 +16,7 @@ export class LoginPage {
       load.present();
       this.dbService.syncAll().subscribe(() => {
         load.dismiss();
-        this.router.navigateByUrl("/profiles");
+        this.router.navigateByUrl("/permits");
       });
     } else { this.message.presentToast("¡Necesitamos conectarnos!"); }
   }

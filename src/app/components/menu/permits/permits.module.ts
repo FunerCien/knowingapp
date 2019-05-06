@@ -2,31 +2,25 @@ import { IonicModule } from '@ionic/angular';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProfilesPage } from './profiles.page';
+import { PermitsPage } from './permits.page';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
-  declarations: [ProfilesPage],
+  declarations: [PermitsPage],
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
     RouterModule.forChild([{
-      component: ProfilesPage,
-      path: 'profiles',
+      component: PermitsPage,
+      path: 'permits',
       children: [{
         path: '',
         pathMatch: 'full',
-        redirectTo: '/profiles/profile'
+        redirectTo: '/permits/profile'
       }, {
         children: [{
-          loadChildren: './option/option.module#OptionPageModule',
-          path: ''
-        }],
-        path: 'option'
-      }, {
-        children: [{
-          loadChildren: '../profile/profile.module#ProfilePageModule',
+          loadChildren: 'src/app/pages/profile/profile.module#ProfilePageModule',
           path: ''
         }],
         path: 'profile'
@@ -34,4 +28,4 @@ import { RouterModule } from '@angular/router';
     }])
   ]
 })
-export class ProfilesPageModule { }
+export class PermitsPageModule { }

@@ -7,9 +7,9 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     public intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(retry(1), catchError((error: HttpErrorResponse) => {
             let errorMessage: string;
-            if (error.error instanceof ErrorEvent) errorMessage = `Error: ${error.error.message}`;
-            else errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
-            Util.dismissServerError();
+            if (!error.error.message) errorMessage = "¡Error en el servidor!";
+            else errorMessage = error.error.message;
+            Util.dismissServerError(error.error.message, error.error.severity);
             return throwError(errorMessage);
         }));
     }

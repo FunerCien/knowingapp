@@ -75,6 +75,20 @@ export class DatabaseService {
             });
         });
     }
+    public selectAll(table: Table): Observable<any[]> {
+        return Observable.create(async (o: Observer<any[]>) => {
+            if (Util.getNetworkStatus()) {
+                let loading = await this.message.createLoading();
+                loading.onDidDismiss().then(() => this.select(SQL.ALL(table)).subscribe(data => { this.completeObserver(o, data) }));
+                loading.present();
+                this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
+                    let data = sync.filter(s => s.entity == table)[0];
+                    this.selectSynchronizable(data.entity, data.edition).subscribe(f => this.service.syncSpecific(table, f).subscribe(s => this.sync(s, table).subscribe(() => loading.dismiss())));
+                });
+            } else { this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data)); }
+        });
+
+    }
     public dropDB(): Observable<any> { return from(this.sql.deleteDatabase({ name: SQL.DATABASE, iosDatabaseLocation: SQL.LOCATION })); }
     public openDb(): Observable<any> {
         return Observable.create((o: Observer<any>) => {
@@ -87,20 +101,6 @@ export class DatabaseService {
                 ).subscribe(() => this.insertSynchronizations().subscribe(() => this.completeObserver(o, [])));
             });
         });
-    }
-    public async selectAll(table: Table, callback: any) {
-        if (Util.getNetworkStatus()) {
-            let loading = await this.message.createLoading();
-            loading.onDidDismiss().then(() => this.select(SQL.ALL(table)).subscribe(data => callback(data)));
-            loading.present();
-            this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
-                let data = sync.filter(s => s.entity == table)[0];
-                this.selectSynchronizable(data.entity, data.edition).subscribe(f => {
-                    this.service.syncSpecific(table, f[0]).subscribe((s =>
-                        this.sync(s, table).subscribe(() => loading.dismiss())));
-                });
-            });
-        } else { this.select(SQL.ALL(table)).subscribe(data => callback(data)); }
     }
     public syncAll(): Observable<any> {
         return Observable.create((o: Observer<any>) => {

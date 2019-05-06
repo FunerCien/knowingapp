@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProfileListPage } from './profile.list.page';
 import { AdminProfilePage } from './admin/admin-profile.page';
 import { Message } from 'src/app/components/utilities/message';
+import { ProfileService } from './profile.service';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,6 @@ import { Message } from 'src/app/components/utilities/message';
       path: ''
     }])
   ],
-  providers: [Message]
+  providers: [Message, ProfileService]
 })
 export class ProfilePageModule { }

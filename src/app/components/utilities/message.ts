@@ -16,7 +16,7 @@ export class Message {
             spinner: 'dots',
             translucent: true
         });
-        Util.setLoading(load, ((m: string) => this.presentToast(m)));
+        Util.setLoading(load, ((m: string, c: string) => this.presentToast(m, c)));
         return load;
     }
     public async presentModal(component: ComponentRef, props: any, dismiss: any) {
@@ -31,15 +31,16 @@ export class Message {
         modal.onDidDismiss().then(() => dismiss());
         return modal;
     }
-    public async presentToast(message: string) {
+    public async presentToast(message: string, color?: string) {
+        color = !color ? "light" : color;
         let toast = await this.toast.create({
             animated: true,
             closeButtonText: "Ok",
-            color: 'light',
+            color: color,
             duration: 3000,
             keyboardClose: true,
             message: message,
-            mode: 'ios',
+            mode: color == "light" ? "ios" : "md",
             position: 'bottom',
             showCloseButton: true,
             translucent: true

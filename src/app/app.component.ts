@@ -6,7 +6,6 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { Util } from './components/utilities/utility';
 import { DatabaseService } from './services/db.service';
-import { Message } from './components/utilities/message';
 
 @Component({
   selector: 'app-root',
@@ -15,15 +14,14 @@ import { Message } from './components/utilities/message';
 export class AppComponent {
 
   options = [{
-    icon: 'microphone',
-    title: 'Nosotros',
-    url: '/roles'
+    icon: 'paper',
+    title: 'Permisos',
+    url: '/permits'
   }];
 
   constructor(
     private dbService: DatabaseService,
     private menu: MenuController,
-    private message: Message,
     private network: Network,
     private platform: Platform,
     private router: Router,
