@@ -12,22 +12,12 @@ import { DatabaseService } from './services/db.service';
   templateUrl: 'app.component.html'
 })
 export class AppComponent {
-
   options = [{
     icon: 'paper',
     title: 'Permisos',
     url: '/permits'
   }];
-
-  constructor(
-    private dbService: DatabaseService,
-    private menu: MenuController,
-    private network: Network,
-    private platform: Platform,
-    private router: Router,
-    private splashScreen: SplashScreen,
-    private statusBar: StatusBar,
-  ) { this.initializeApp(); }
+  constructor(private dbService: DatabaseService, private menu: MenuController, private network: Network, private platform: Platform, private router: Router, private splashScreen: SplashScreen, private statusBar: StatusBar, ) { this.initializeApp(); }
   public initializeApp() {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();

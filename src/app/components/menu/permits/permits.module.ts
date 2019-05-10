@@ -7,25 +7,20 @@ import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [PermitsPage],
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    RouterModule.forChild([{
-      component: PermitsPage,
-      path: 'permits',
+  imports: [CommonModule, FormsModule, IonicModule, RouterModule.forChild([{
+    children: [{
+      path: '',
+      pathMatch: 'full',
+      redirectTo: '/permits/profile'
+    }, {
       children: [{
-        path: '',
-        pathMatch: 'full',
-        redirectTo: '/permits/profile'
-      }, {
-        children: [{
-          loadChildren: 'src/app/pages/profile/profile.module#ProfilePageModule',
-          path: ''
-        }],
-        path: 'profile'
-      }]
-    }])
-  ]
+        loadChildren: 'src/app/pages/profile/profile.module#ProfilePageModule',
+        path: ''
+      }],
+      path: 'profile'
+    }],
+    component: PermitsPage,
+    path: 'permits'
+  }])]
 })
 export class PermitsPageModule { }

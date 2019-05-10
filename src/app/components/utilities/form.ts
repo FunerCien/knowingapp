@@ -4,8 +4,10 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 export class Forms {
     static createProfile(profile: Entities.Profile): FormGroup {
         return new FormGroup({
-            id: new FormControl({ value: profile.id, disabled: true }),
-            name: new FormControl({ value: profile.name, disabled: profile.id === 1 }, Validators.required)
+            lid: new FormControl(profile.lid),
+            id: new FormControl(profile.id),
+            name: new FormControl(profile.name, Validators.required),
+            edition: new FormControl(profile.edition)
         });
     }
 }

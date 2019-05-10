@@ -8,15 +8,9 @@ import { PermitsPageModule } from '../components/menu/permits/permits.module';
 
 @NgModule({
   declarations: [LoginPage],
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    PermitsPageModule,
-    RouterModule.forChild([{
-      component: LoginPage,
-      path: ''
-    }])
-  ]
+  imports: [CommonModule, FormsModule, IonicModule, PermitsPageModule, RouterModule.forChild([{
+    component: LoginPage,
+    path: ''
+  }])]
 })
 export class LoginPageModule { }

@@ -6,7 +6,10 @@ import { Message } from 'src/app/components/utilities/message';
 import { Util } from 'src/app/components/utilities/utility';
 import { ProfileService } from './profile.service';
 
-@Component({ selector: 'app-profile-list', templateUrl: 'profile.list.page.html' })
+@Component({
+  selector: 'app-profile-list',
+  templateUrl: 'profile.list.page.html'
+})
 export class ProfileListPage {
   private allProfiles: Entities.Profile[];
   public profiles: Entities.Profile[];

@@ -1,11 +1,12 @@
 export module Entities {
-
     export class Option {
+        lid: Number;
         id: Number;
         action: string;
         module: string;
         edition: string;
         constructor(option?: Option) {
+            this.lid = option && option.lid || null;
             this.id = option && option.id || null;
             this.action = option && option.action || null;
             this.module = option && option.module || null;
@@ -26,19 +27,19 @@ export module Entities {
             };
         }
     }
-
     export class Profile {
+        lid: Number;
         id: Number;
         name: string;
         edition: string;
         constructor(profile?: Profile) {
+            this.lid = profile && profile.lid || null;
             this.id = profile && profile.id || null;
             this.name = profile && profile.name || null;
             this.edition = profile && profile.edition || null;
             this.toString = () => this.name;
         }
     }
-
     export class Synchronization {
         options: SynchronizationBatch = new SynchronizationBatch();
         profiles: SynchronizationBatch = new SynchronizationBatch();
@@ -47,7 +48,6 @@ export module Entities {
             this.profiles = synchronization && synchronization.profiles || new SynchronizationBatch();
         }
     }
-
     export class SynchronizationBatch {
         edition: string;
         synchronizations: any[];

@@ -7,7 +7,10 @@ import { Forms } from 'src/app/components/utilities/form';
 import { ProfileService } from '../profile.service';
 import { Message } from 'src/app/components/utilities/message';
 
-@Component({ selector: 'app-admin-profile', templateUrl: './admin-profile.page.html' })
+@Component({
+  selector: 'app-admin-profile',
+  templateUrl: './admin-profile.page.html'
+})
 export class AdminProfilePage implements OnInit {
   @Input() profile: Entities.Profile;
   public allOptions: Entities.Option[] = new Array();
@@ -21,8 +24,9 @@ export class AdminProfilePage implements OnInit {
     this.cleanOptions();
   }
   public saveProfile() {
-    if (!this.form.invalid) this.service.save(this.form.value).subscribe(p => {
-      this.message.presentToast(p + " guardado");
+    let profile: Entities.Profile = new Entities.Profile(this.form.value);
+    if (!this.form.invalid) this.service.save(profile).subscribe(() => {
+      this.message.presentToast(profile + " guardado");
       this.modal.dismiss()
     });
     else this.message.presentToast("El nombre del perfil es necesario");

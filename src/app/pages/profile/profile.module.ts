@@ -9,21 +9,11 @@ import { Message } from 'src/app/components/utilities/message';
 import { ProfileService } from './profile.service';
 
 @NgModule({
-  declarations: [
-    AdminProfilePage,
-    ProfileListPage
-  ],
-  entryComponents: [AdminProfilePage],
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    ReactiveFormsModule,
-    RouterModule.forChild([{
-      component: ProfileListPage,
-      path: ''
-    }])
-  ],
+  declarations: [AdminProfilePage, ProfileListPage], entryComponents: [AdminProfilePage],
+  imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule, RouterModule.forChild([{
+    component: ProfileListPage,
+    path: ''
+  }])],
   providers: [Message, ProfileService]
 })
 export class ProfilePageModule { }

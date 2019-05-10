@@ -18,6 +18,6 @@ export class LoginPage {
         load.dismiss();
         this.router.navigateByUrl("/permits");
       });
-    } else { this.message.presentToast("¡Necesitamos conectarnos!"); }
+    } else this.message.presentToast("¡Necesitamos conectarnos!");
   }
 }

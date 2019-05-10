@@ -18,26 +18,8 @@ import { SynchroizationService } from './services/synchronization.service';
 
 @NgModule({
   bootstrap: [AppComponent],
-  declarations: [
-    AppComponent,
-    ItemMenuComponent
-  ],
-  imports: [
-    AppRoutingModule,
-    BrowserModule,
-    HttpClientModule,
-    IonicModule.forRoot()
-  ],
-  providers: [
-    DatabaseService,
-    Message,
-    Network,
-    SplashScreen,
-    SQLite,
-    StatusBar,
-    SynchroizationService,
-    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
-  ]
+  declarations: [AppComponent, ItemMenuComponent],
+  imports: [AppRoutingModule, BrowserModule, HttpClientModule, IonicModule.forRoot()],
+  providers: [DatabaseService, Message, Network, SplashScreen, SQLite, StatusBar, SynchroizationService, { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true }, { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }]
 })
 export class AppModule { }

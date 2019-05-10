@@ -31,6 +31,17 @@ export class DatabaseService {
         });
     }
     private runSQL(sql: string): Observable<any> { return from(this.database.executeSql(sql, [])) }
+    private persist(entities: any[], insert: any, update: any, validation: any): Observable<any> {
+        return Observable.create((o: Observer<any>) => {
+            let values: any[] = new Array();
+            entities.forEach(e => {
+                if (validation(e)) this.runSQL(update(e));
+                else values.push(e);
+            });
+            if (values.length != 0) this.runSQL(insert(values)).subscribe(() => this.completeObserver(o, []));
+            else this.completeObserver(o, []);
+        })
+    }
     private select(query: string): Observable<any[]> {
         return this.runSQL(query).pipe(map((data) => {
             let lists = [];
@@ -44,7 +55,7 @@ export class DatabaseService {
                 let batch: Entities.SynchronizationBatch = new Entities.SynchronizationBatch();
                 batch.edition = edition;
                 row.forEach(r => {
-                    batch.existings.push(r.id)
+                    if (r.id) batch.existings.push(r.id);
                     if (new Date(r.edition) > new Date(edition)) batch.synchronizations.push(r);
                 });
                 this.completeObserver(o, batch);
@@ -53,10 +64,8 @@ export class DatabaseService {
     }
     private sync(synchronization: Entities.SynchronizationBatch, table: Table): Observable<any> {
         switch (table) {
-            case Table.options:
-                return this.syncSpecific(synchronization, table, (o: Entities.Option[]) => SQL.INSERT_OPTIONS(o), (o: Entities.Option) => SQL.UPDATE_OPTIONS(o));
-            case Table.profiles:
-                return this.syncSpecific(synchronization, table, (o: Entities.Profile[]) => SQL.INSERT_PROFILES(o), (o: Entities.Profile) => SQL.UPDATE_PROFILES(o));
+            case Table.options: return this.syncSpecific(synchronization, table, (o: Entities.Option[]) => SQL.INSERT_OPTIONS(o), (o: Entities.Option) => SQL.UPDATE_OPTIONS(o));
+            case Table.profiles: return this.syncSpecific(synchronization, table, (o: Entities.Profile[]) => SQL.INSERT_PROFILES(o), (o: Entities.Profile) => SQL.UPDATE_PROFILES(o));
         }
     }
     private syncSpecific(batch: Entities.SynchronizationBatch, table: Table, insert: any, update: any): Observable<any> {
@@ -64,16 +73,35 @@ export class DatabaseService {
             forkJoin(this.runSQL(SQL.UPDATE_SYNCHRONIZATION(batch.edition, table)), this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))).subscribe(() => {
                 this.select(SQL.IDS(table)).subscribe(r => {
                     let ids = r.map(i => i.id);
-                    let inserts: any[] = new Array();
-                    batch.synchronizations.forEach(s => {
-                        if (ids.includes(s.id)) this.runSQL(update(s));
-                        else inserts.push(s);
-                    });
-                    if (inserts.length != 0) this.runSQL(insert(inserts)).subscribe(() => this.completeObserver(o, []));
-                    else this.completeObserver(o, []);
+                    this.persist(batch.synchronizations, insert, update, (e: any) => ids.includes(e.id)).subscribe(() => this.completeObserver(o, []));
                 });
             });
         });
+    }
+    public dropDB(): Observable<any> { return from(this.sql.deleteDatabase({ name: SQL.DATABASE, iosDatabaseLocation: SQL.LOCATION })); }
+    public exist(table: Table, entity: any): Observable<Boolean> {
+        return Observable.create((o: Observer<Boolean>) => {
+            switch (table) {
+                case Table.profiles: this.select(SQL.EXIST_PROFILE(entity)).subscribe(d => this.completeObserver(o, d[0].exist > 0));
+            }
+        });
+    }
+    public openDb(): Observable<any> {
+        return Observable.create((o: Observer<any>) => {
+            from(this.sql.create({ location: SQL.LOCATION, name: SQL.DATABASE })).subscribe(d => {
+                this.database = d;
+                forkJoin(
+                    this.runSQL(SQL.CREATE_OPTIONS),
+                    this.runSQL(SQL.CREATE_PROFILES),
+                    this.runSQL(SQL.CREATE_SYNCHRONIZATIONS)
+                ).subscribe(() => this.insertSynchronizations().subscribe(() => this.completeObserver(o, [])));
+            });
+        });
+    }
+    public save(table: Table, entities: any[]): Observable<any> {
+        switch (table) {
+            case Table.profiles: return this.persist(entities, (o: Entities.Profile[]) => SQL.INSERT_PROFILES(o), (o: Entities.Profile) => SQL.UPDATE_PROFILES_LOCAL(o), (e: any) => e.lid);
+        }
     }
     public selectAll(table: Table): Observable<any[]> {
         return Observable.create(async (o: Observer<any[]>) => {
@@ -85,21 +113,7 @@ export class DatabaseService {
                     let data = sync.filter(s => s.entity == table)[0];
                     this.selectSynchronizable(data.entity, data.edition).subscribe(f => this.service.syncSpecific(table, f).subscribe(s => this.sync(s, table).subscribe(() => loading.dismiss())));
                 });
-            } else { this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data)); }
-        });
-
-    }
-    public dropDB(): Observable<any> { return from(this.sql.deleteDatabase({ name: SQL.DATABASE, iosDatabaseLocation: SQL.LOCATION })); }
-    public openDb(): Observable<any> {
-        return Observable.create((o: Observer<any>) => {
-            from(this.sql.create({ location: SQL.LOCATION, name: SQL.DATABASE })).subscribe(d => {
-                this.database = d;
-                forkJoin(
-                    this.runSQL(SQL.CREATE_OPTIONS),
-                    this.runSQL(SQL.CREATE_PROFILES),
-                    this.runSQL(SQL.CREATE_SYNCHRONIZATIONS)
-                ).subscribe(() => this.insertSynchronizations().subscribe(() => this.completeObserver(o, [])));
-            });
+            } else this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data));
         });
     }
     public syncAll(): Observable<any> {
