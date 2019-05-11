@@ -10,6 +10,15 @@
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
 
+.alert {
+  button.alert-button.dark {
+    color: black;
+  }
+  button.alert-button.danger {
+    color: red;
+  }
+}
+
 .swiper-pagination {
   top: 5px;
   height: 5px;

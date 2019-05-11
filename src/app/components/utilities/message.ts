@@ -1,11 +1,44 @@
-import { Injectable } from '@angular/core';
-import { LoadingController, ModalController, ToastController } from '@ionic/angular';
-import { Util } from './utility';
+import { ActionSheetController, AlertController, LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { ComponentRef } from '@ionic/core';
+import { Injectable } from '@angular/core';
+import { Util } from './utility';
 
 @Injectable()
 export class Message {
-    constructor(private loading: LoadingController, private modal: ModalController, private toast: ToastController) { }
+    constructor(private actionSheetController: ActionSheetController, private alertController: AlertController, private loading: LoadingController, private modal: ModalController, private toast: ToastController) { }
+    public async presentActionSheet(header: string, buttons: { cssClass?: string, icon?: string, role?: string, text: string, handler: any }[]) {
+        const actionSheet = await this.actionSheetController.create({
+            animated: true,
+            backdropDismiss: true,
+            buttons: buttons,
+            header: header,
+            keyboardClose: true,
+            translucent: true
+        });
+        actionSheet.present();
+    }
+    public async presentAlertConfirm(header: string, message: string, buttons: { cssClass?: string, text: string, role?: string, handler: any }[]) {
+        let but: { cssClass?: string, text: string, role?: string, handler: any }[] = [{
+            text: "Cancelar",
+            cssClass: "dark",
+            role: "cancel",
+            handler: () => null
+        }];
+        buttons.forEach(b => but.push(b));
+        const alert = await this.alertController.create({
+            animated: true,
+            backdropDismiss: true,
+            buttons: but,
+            cssClass: 'alert',
+            header: header,
+            keyboardClose: true,
+            message: message,
+            mode: 'ios',
+            translucent: true
+        });
+
+        await alert.present();
+    }
     public async createLoading(message?: string) {
         let load = await this.loading.create({
             animated: true,

@@ -1,8 +1,7 @@
-import { concatMap, map } from "rxjs/operators";
+import { map } from "rxjs/operators";
 import { forkJoin, from, Observable, Observer } from 'rxjs';
 import { Entities } from '../entities/Entities';
 import { Injectable } from '@angular/core';
-import { Message } from '../components/utilities/message';
 import { SQL, Table } from './db.sql';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 import { SynchroizationService } from './synchronization.service';
@@ -11,7 +10,7 @@ import { Util } from '../components/utilities/utility';
 @Injectable()
 export class DatabaseService {
     private database: SQLiteObject;
-    constructor(private message: Message, private sql: SQLite, private service: SynchroizationService) { }
+    constructor(private sql: SQLite, private service: SynchroizationService) { }
     private completeObserver(observer: Observer<any>, value: any) {
         observer.next(value);
         observer.complete();
@@ -78,6 +77,7 @@ export class DatabaseService {
             });
         });
     }
+    public delete(table: Table, lid: Number): Observable<any> { return this.runSQL(SQL.DELETE(lid, table)) }
     public dropDB(): Observable<any> { return from(this.sql.deleteDatabase({ name: SQL.DATABASE, iosDatabaseLocation: SQL.LOCATION })); }
     public exist(table: Table, entity: any): Observable<Boolean> {
         return Observable.create((o: Observer<Boolean>) => {
@@ -106,12 +106,9 @@ export class DatabaseService {
     public selectAll(table: Table): Observable<any[]> {
         return Observable.create(async (o: Observer<any[]>) => {
             if (Util.getNetworkStatus()) {
-                let loading = await this.message.createLoading();
-                loading.onDidDismiss().then(() => this.select(SQL.ALL(table)).subscribe(data => { this.completeObserver(o, data) }));
-                loading.present();
                 this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
                     let data = sync.filter(s => s.entity == table)[0];
-                    this.selectSynchronizable(data.entity, data.edition).subscribe(f => this.service.syncSpecific(table, f).subscribe(s => this.sync(s, table).subscribe(() => loading.dismiss())));
+                    this.selectSynchronizable(data.entity, data.edition).subscribe(f => this.service.syncSpecific(table, f).subscribe(s => this.sync(s, table).subscribe(() => this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data)))));
                 });
             } else this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data));
         });

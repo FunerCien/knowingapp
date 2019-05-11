@@ -14,17 +14,16 @@ export class ProfileListPage {
   private allProfiles: Entities.Profile[];
   public profiles: Entities.Profile[];
   constructor(private message: Message, private service: ProfileService) { }
-  public async adminProfile(profile?: Entities.Profile) {
-    let modal = await this.message.presentModal(AdminProfilePage, { 'profile': new Entities.Profile(profile) }, (() => this.ionViewWillEnter()));
-    modal.present();
-  }
-  public cleanSearchbar() { this.profiles = this.allProfiles; }
-  public ionViewWillEnter() {
+  private getAll(event?: any) {
     this.service.getAll().subscribe(p => {
+      if (event) event.target.complete();
       this.allProfiles = new Array();
       p.forEach(o => this.allProfiles.push(new Entities.Profile(o)));
       this.profiles = this.allProfiles;
     })
   }
+  public async adminProfile(profile?: Entities.Profile) { (await this.message.presentModal(AdminProfilePage, { 'profile': new Entities.Profile(profile) }, (() => this.getAll()))).present(); }
+  public cleanSearchbar() { this.profiles = this.allProfiles; }
+  public ionViewWillEnter() { this.getAll() }
   public search(searchbar: IonSearchbar) { this.profiles = Util.search(this.allProfiles, searchbar.value); }
 }

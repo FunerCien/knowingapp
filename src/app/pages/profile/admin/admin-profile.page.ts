@@ -25,11 +25,15 @@ export class AdminProfilePage implements OnInit {
   }
   public saveProfile() {
     let profile: Entities.Profile = new Entities.Profile(this.form.value);
-    if (!this.form.invalid) this.service.save(profile).subscribe(() => {
-      this.message.presentToast(profile + " guardado");
-      this.modal.dismiss()
-    });
+    if (!this.form.invalid) this.service.save(profile).subscribe(() => this.modal.dismiss());
     else this.message.presentToast("El nombre del perfil es necesario");
+  }
+  public delete(profile: Entities.Profile) {
+    this.message.presentAlertConfirm(`¿Eliminar ${profile}?`, "Una vez eliminado no se podrá recuperar", [{
+      cssClass: 'danger',
+      text: "Eliminar",
+      handler: () => this.service.delete(profile).subscribe(() => this.modal.dismiss())
+    }])
   }
   public searchOptions(searchbar: IonSearchbar) { this.options = Util.search(this.allOptions, searchbar.value); }
 }
