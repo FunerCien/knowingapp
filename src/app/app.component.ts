@@ -38,6 +38,7 @@ export class AppComponent {
     });
   }
   public signOff() {
+    this.menu.close();
     this.message.presentAlertConfirm('¿Cerrar sesión?', Util.getNetworkStatus() ? '' : 'Los datos que no se hayan sincronizado se perderán', [{
       cssClass: 'danger',
       text: 'Salir',
@@ -47,5 +48,8 @@ export class AppComponent {
       }
     }]);
   }
-  public version() { this.message.presentAlertConfirm('v0.0.001'); }
+  public version() {
+    this.menu.close();
+    this.message.presentAlertConfirm('v0.0.001', '');
+  }
 }
