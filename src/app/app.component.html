@@ -21,6 +21,15 @@
           </ion-menu-toggle>
         </ion-list>
       </ion-content>
+      <ion-footer no-border>
+        <ion-toolbar>
+          <ion-buttons slot="end">
+            <ion-button (click)="version()">
+              <ion-icon mode="ios" name="information-circle-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-footer>
     </ion-menu>
     <ion-router-outlet main></ion-router-outlet>
   </ion-split-pane>

@@ -35,7 +35,7 @@ export class ProfileService {
                     let loading = await this.message.createLoading("Guardando");
                     let message: string = `${profile} guardado`;
                     loading.present();
-                    if (Util.getNetworkStatus()) this.http.post<Entities.Profile>(`${this.url}/save`, profile, { headers: this.httpHeaders }).subscribe(() => this.complete(message, o, loading));
+                    if (Util.getNetworkStatus()) this.db.prepareSynchronization(profile, Table.profiles).subscribe(p => this.http.post<Entities.Profile>(`${this.url}/save`, p, { headers: this.httpHeaders }).subscribe(() => this.complete(message, o, loading)));
                     else this.db.save(Table.profiles, [profile]).subscribe(() => this.complete(message, o, loading));
                 } else {
                     let message: string = `Ya existe el perfil ${profile}`

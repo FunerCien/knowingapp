@@ -17,18 +17,18 @@ export class Message {
         });
         actionSheet.present();
     }
-    public async presentAlertConfirm(header: string, message: string, buttons: { cssClass?: string, text: string, role?: string, handler: any }[]) {
+    public async presentAlertConfirm(header: string, message?: string, buttons?: { cssClass?: string, text: string, role?: string, handler: any }[]) {
         let but: { cssClass?: string, text: string, role?: string, handler: any }[] = [{
             text: "Cancelar",
             cssClass: "dark",
             role: "cancel",
             handler: () => null
         }];
-        buttons.forEach(b => but.push(b));
+        if (buttons) buttons.forEach(b => but.push(b));
         const alert = await this.alertController.create({
             animated: true,
             backdropDismiss: true,
-            buttons: but,
+            buttons: buttons ? but : [],
             cssClass: 'alert',
             header: header,
             keyboardClose: true,

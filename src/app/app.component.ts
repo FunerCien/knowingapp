@@ -47,4 +47,5 @@ export class AppComponent {
       }
     }]);
   }
+  public version() { this.message.presentAlertConfirm('v0.0.001'); }
 }
