@@ -69,7 +69,7 @@ export class DatabaseService {
     }
     private syncSpecific(batch: Entities.SynchronizationBatch, table: Table, insert: any, update: any): Observable<any> {
         return Observable.create((o: Observer<any>) => {
-            forkJoin(this.runSQL(SQL.UPDATE_SYNCHRONIZATION(batch.edition, table)), this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))).subscribe(() => {
+            forkJoin(this.runSQL(SQL.UPDATE_SYNCHRONIZATION(Util.now(), table)), this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))).subscribe(() => {
                 this.select(SQL.IDS(table)).subscribe(r => {
                     let ids = r.map(i => i.id);
                     this.persist(batch.synchronizations, insert, update, (e: any) => ids.includes(e.id)).subscribe(() => this.completeObserver(o, []));

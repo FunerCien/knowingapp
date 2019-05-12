@@ -5,11 +5,11 @@
         <ion-icon name="arrow-back" mode="ios"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title *ngIf="profile.id === null"> Crear perfil </ion-title>
-    <ion-title *ngIf="profile.id !== null"> Actualizar perfil </ion-title>
+    <ion-title *ngIf="profile.lid === null"> Crear perfil </ion-title>
+    <ion-title *ngIf="profile.lid !== null"> Actualizar perfil </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="saveProfile()">
-        <ion-icon name="checkmark"></ion-icon>
+        <ion-icon color="success" name="checkmark"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -43,7 +43,7 @@
       </ion-list>
     </ion-slide>
   </ion-slides>-->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="profile.id !== null">
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="profile.lid !== null">
     <ion-fab-button color="danger" size="small" (click)="delete(profile)">
       <ion-icon name="trash"></ion-icon>
     </ion-fab-button>
