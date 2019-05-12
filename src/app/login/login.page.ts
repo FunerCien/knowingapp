@@ -14,10 +14,10 @@ export class LoginPage {
     if (Util.getNetworkStatus()) {
       let load = await this.message.createLoading("Sincronizando");
       load.present();
-      this.dbService.syncAll().subscribe(() => {
+      this.dbService.dropDB().subscribe(() => this.dbService.openDb().subscribe(() => this.dbService.syncAll().subscribe(() => {
         load.dismiss();
         this.router.navigateByUrl("/permits");
-      });
+      })));
     } else this.router.navigateByUrl("/permits");//this.message.presentToast("¡Necesitamos conectarnos!");
   }
 }

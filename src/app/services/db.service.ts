@@ -48,16 +48,21 @@ export class DatabaseService {
             return lists;
         }));
     }
-    private selectSynchronizable(table: Table, edition: string): Observable<Entities.SynchronizationBatch> {
+    private selectSynchronizable(table: Table, edition: string, ledition: string): Observable<Entities.SynchronizationBatch> {
         return Observable.create((o: Observer<Entities.SynchronizationBatch>) => {
             this.select(SQL.ALL(table)).subscribe(row => {
                 let batch: Entities.SynchronizationBatch = new Entities.SynchronizationBatch();
                 batch.edition = edition;
+                let synchronizables = new Array();
                 row.forEach(r => {
                     if (r.id) batch.existings.push(r.id);
-                    if (new Date(r.edition) > new Date(edition)) batch.synchronizations.push(r);
+                    if (new Date(r.edition) > new Date(ledition)) synchronizables.push(this.prepareSynchronization(r, table));
                 });
-                this.completeObserver(o, batch);
+                if (synchronizables.length > 0) forkJoin(synchronizables).subscribe(sync => {
+                    sync.forEach(s => batch.synchronizations.push(s));
+                    this.completeObserver(o, batch);
+                });
+                else this.completeObserver(o, batch);
             });
         });
     }
@@ -69,7 +74,7 @@ export class DatabaseService {
     }
     private syncSpecific(batch: Entities.SynchronizationBatch, table: Table, insert: any, update: any): Observable<any> {
         return Observable.create((o: Observer<any>) => {
-            forkJoin(this.runSQL(SQL.UPDATE_SYNCHRONIZATION(Util.now(), table)), this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))).subscribe(() => {
+            forkJoin(this.runSQL(SQL.UPDATE_SYNCHRONIZATION(batch.edition, table)), this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))).subscribe(() => {
                 this.select(SQL.IDS(table)).subscribe(r => {
                     let ids = r.map(i => i.id);
                     this.persist(batch.synchronizations, insert, update, (e: any) => ids.includes(e.id)).subscribe(() => this.completeObserver(o, []));
@@ -84,6 +89,17 @@ export class DatabaseService {
             switch (table) {
                 case Table.profiles: this.select(SQL.EXIST_PROFILE(entity)).subscribe(d => this.completeObserver(o, d[0].exist > 0));
             }
+        });
+    }
+    public prepareSynchronization(entity: any, table: Table): Observable<any> {
+        return Observable.create((o: Observer<any>) => {
+            this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
+                let data = sync.filter(s => s.entity == table)[0];
+                let date = new Date();
+                date.setTime(new Date(data.edition).getTime() + (new Date(entity.edition).getTime() - new Date(data.ledition).getTime()));
+                entity.edition = Util.getDate(date);
+                this.completeObserver(o, entity);
+            });
         });
     }
     public openDb(): Observable<any> {
@@ -108,7 +124,7 @@ export class DatabaseService {
             if (Util.getNetworkStatus()) {
                 this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
                     let data = sync.filter(s => s.entity == table)[0];
-                    this.selectSynchronizable(data.entity, data.edition).subscribe(f => this.service.syncSpecific(table, f).subscribe(s => this.sync(s, table).subscribe(() => this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data)))));
+                    this.selectSynchronizable(data.entity, data.edition, data.ledition).subscribe(f => this.service.syncSpecific(table, f).subscribe(s => this.sync(s, table).subscribe(() => this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data)))));
                 });
             } else this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data));
         });
@@ -119,8 +135,8 @@ export class DatabaseService {
                 let options = sync.filter(s => s.entity == Table.options)[0];
                 let profiles = sync.filter(s => s.entity == Table.profiles)[0];
                 forkJoin(
-                    this.selectSynchronizable(options.entity, options.edition),
-                    this.selectSynchronizable(profiles.entity, profiles.edition)
+                    this.selectSynchronizable(options.entity, options.edition, options.ledition),
+                    this.selectSynchronizable(profiles.entity, options.edition, profiles.ledition)
                 ).subscribe(f => {
                     let synchronization: Entities.Synchronization = new Entities.Synchronization();
                     synchronization.options = f[0];

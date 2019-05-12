@@ -47,14 +47,4 @@ export class AppComponent {
       }
     }]);
   }
-  public async syncUp() {
-    if (Util.getNetworkStatus()) {
-      let load = await this.message.createLoading("Sincronizando");
-      load.present();
-      this.dbService.dropDB().subscribe(() => this.dbService.openDb().subscribe(() => this.dbService.syncAll().subscribe(() => {
-        load.dismiss()
-        this.message.presentToast("App sincronizada ¡Actualiza tu pantalla actual!");
-      })));
-    } else this.message.presentToast("¡Necesitamos conectarnos!");
-  }
 }
