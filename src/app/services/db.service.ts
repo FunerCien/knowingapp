@@ -42,10 +42,10 @@ export class DatabaseService {
         })
     }
     private select(query: string): Observable<any[]> {
-        return this.runSQL(query).pipe(map((data) => {
-            let lists = [];
-            for (let i = 0; i < data.rows.length; i++) lists.push(data.rows.item(i));
-            return lists;
+        return this.runSQL(query).pipe(map((d) => {
+            let list = [];
+            for (let i = 0; i < d.rows.length; i++) list.push(d.rows.item(i));
+            return Util.sort(list);
         }));
     }
     private selectSynchronizable(table: Table, edition: string, ledition: string): Observable<Entities.SynchronizationBatch> {

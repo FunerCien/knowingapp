@@ -26,7 +26,7 @@ export class SQL {
     static DELETE(lid: Number, table: Table) { return `DELETE FROM ${table} WHERE lid=${lid};` }
     static DELETE_ID_NOT_IN(ids: Number[], table: Table) { return `DELETE FROM ${table} WHERE id NOT IN(${ids}) OR id IS NULL;` }
     static IDS(table: Table): string { return `SELECT id FROM ${table} WHERE id IS NOT NULL;`; }
-    static EXIST_PROFILE(profile: Entities.Profile) { return `SELECT COUNT(0) exist FROM profiles WHERE lid<>${profile.lid ? profile.lid : 0} AND name='${profile.name}';`; }
+    static EXIST_PROFILE(profile: Entities.Profile) { return `SELECT COUNT(0) exist FROM profiles WHERE lid<>${profile.lid ? profile.lid : 0} AND UPPER(name)=UPPER('${profile.name}');`; }
     static INSERT_OPTIONS(options: Entities.Option[]) {
         return `INSERT INTO options (id, action, module, edition) 
             VALUES ${options.map(o => `(${o.id}, '${o.action}', '${o.module}', '${Util.getDate()}')`)};`;

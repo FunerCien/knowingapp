@@ -17,9 +17,14 @@
     <ion-refresher-content refreshingSpinner="dots">
     </ion-refresher-content>
   </ion-refresher>
-  <ion-list lines="none">
-    <ion-item (click)="adminProfile(profile)" *ngFor="let profile of profiles">
+  <ion-list lines="none" *ngIf="profiles.length>0">
+    <ion-item *ngFor="let profile of profiles" (click)="adminProfile(profile)">
       <ion-label>{{profile}}</ion-label>
     </ion-item>
+  </ion-list>
+  <ion-list *ngIf="profiles.length==0">
+    <ion-list-header>
+      <ion-label>No se encontraron perfiles</ion-label>
+    </ion-list-header>
   </ion-list>
 </ion-content>

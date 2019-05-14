@@ -11,10 +11,12 @@ import { ProfileService } from './profile.service';
   templateUrl: 'profile.list.page.html'
 })
 export class ProfileListPage {
-  private allProfiles: Entities.Profile[];
-  public profiles: Entities.Profile[];
+  private allProfiles: Entities.Profile[] = new Array();
+  public profiles: Entities.Profile[] = new Array();
   constructor(private message: Message, private service: ProfileService) { }
-  private getAll(event?: any) {
+  public async adminProfile(profile?: Entities.Profile) { (await this.message.presentModal(AdminProfilePage, { 'profile': new Entities.Profile(profile) }, (() => this.getAll()))).present(); }
+  public cleanSearchbar() { this.profiles = this.allProfiles; }
+  public getAll(event?: any) {
     this.service.getAll().subscribe(p => {
       if (event) event.target.complete();
       this.allProfiles = new Array();
@@ -22,8 +24,6 @@ export class ProfileListPage {
       this.profiles = this.allProfiles;
     })
   }
-  public async adminProfile(profile?: Entities.Profile) { (await this.message.presentModal(AdminProfilePage, { 'profile': new Entities.Profile(profile) }, (() => this.getAll()))).present(); }
-  public cleanSearchbar() { this.profiles = this.allProfiles; }
   public ionViewWillEnter() { this.getAll() }
   public search(searchbar: IonSearchbar) { this.profiles = Util.search(this.allProfiles, searchbar.value); }
 }
