@@ -24,6 +24,7 @@ export class ProfileListPage {
       this.profiles = this.allProfiles;
     })
   }
+  public info() { this.message.presentAlertConfirm('Perfiles', 'A los siervos se le asignan <b>perfiles</b> para definir sus coordinadores y gestionar sus permisos dentro de la aplicación.'); }
   public ionViewWillEnter() { this.getAll() }
   public search(searchbar: IonSearchbar) { this.profiles = Util.search(this.allProfiles, searchbar.value); }
 }

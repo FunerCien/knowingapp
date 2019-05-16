@@ -30,7 +30,6 @@ export class ProfileService {
     public getAll(): Observable<Entities.Profile[]> { return this.db.selectAll(Table.profiles); }
     public save(profile: Entities.Profile): Observable<Entities.Profile> {
         return Observable.create((o: Observer<Entities.Profile>) => {
-            profile.name = profile.name.trim();
             this.db.exist(Table.profiles, profile).subscribe(async e => {
                 if (!e) {
                     let loading = await this.message.createLoading("Guardando");

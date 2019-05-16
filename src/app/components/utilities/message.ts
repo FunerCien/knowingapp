@@ -13,7 +13,7 @@ export class Message {
             buttons: buttons,
             header: header,
             keyboardClose: true,
-            translucent: true
+            translucent: false
         });
         actionSheet.present();
     }
@@ -34,7 +34,7 @@ export class Message {
             keyboardClose: true,
             message: message,
             mode: 'ios',
-            translucent: true
+            translucent: false
         });
 
         await alert.present();
@@ -76,7 +76,7 @@ export class Message {
             mode: color == "light" ? "ios" : "md",
             position: 'bottom',
             showCloseButton: true,
-            translucent: true
+            translucent: false
         });
         toast.present();
     }

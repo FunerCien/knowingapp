@@ -13,19 +13,13 @@ import { Message } from 'src/app/components/utilities/message';
 })
 export class AdminProfilePage implements OnInit {
   @Input() profile: Entities.Profile;
-  public allOptions: Entities.Option[] = new Array();
   public form: FormGroup;
-  public options: Entities.Option[] = new Array();
   constructor(public formBuilder: FormBuilder, private message: Message, private modal: ModalController, private service: ProfileService) { }
-  public cleanOptions() { this.options = this.allOptions; }
   public close() { this.modal.dismiss(); }
-  public ngOnInit() {
-    this.form = Forms.createProfile(this.profile);
-    this.cleanOptions();
-  }
+  public ngOnInit() { this.form = Forms.getProfile(this.profile); }
   public saveProfile() {
-    let profile: Entities.Profile = new Entities.Profile(this.form.value);
-    if (!this.form.invalid) this.service.save(profile).subscribe(() => this.modal.dismiss());
+    this.form = Forms.getProfile(this.form.value);
+    if (!Forms.getProfile(this.form.value).invalid) this.service.save(new Entities.Profile(this.form.value)).subscribe(() => this.modal.dismiss());
     else this.message.presentToast("El nombre del perfil es necesario");
   }
   public delete(profile: Entities.Profile) {
@@ -35,5 +29,4 @@ export class AdminProfilePage implements OnInit {
       handler: () => this.service.delete(profile).subscribe(() => this.modal.dismiss())
     }])
   }
-  public searchOptions(searchbar: IonSearchbar) { this.options = Util.search(this.allOptions, searchbar.value); }
 }

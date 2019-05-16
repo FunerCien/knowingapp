@@ -50,6 +50,6 @@ export class AppComponent {
   }
   public version() {
     this.menu.close();
-    this.message.presentAlertConfirm('v0.0.001', '');
+    this.message.presentAlertConfirm('v0.0.002 BETA', 'Versión inestable');
   }
 }
