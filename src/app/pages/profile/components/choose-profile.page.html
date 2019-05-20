@@ -1,0 +1,20 @@
+<ion-header no-border>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="close()">
+        <ion-icon name="arrow-back" mode="ios"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title> Perfiles </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-searchbar animated mode="ios" (keyup)="search(iS)" (ionClear)="cleanSearchbar()" #iS></ion-searchbar>
+<ion-content>
+  <ion-list lines="none" style="width: 100%;">
+    <ion-list lines="none">
+      <ion-item *ngFor="let profile of profiles">
+        <ion-label>{{profile}}</ion-label>
+      </ion-item>
+    </ion-list>
+  </ion-list>
+</ion-content>

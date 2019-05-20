@@ -7,13 +7,14 @@ import { Network } from "@ionic-native/network/ngx";
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { Util } from './components/utilities/utility';
+import { SynchroizationService } from './services/synchronization.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html'
 })
 export class AppComponent {
-  options = [{
+  public options = [{
     icon: 'paper',
     title: 'Permisos',
     url: '/permits'
@@ -25,11 +26,11 @@ export class AppComponent {
       this.statusBar.hide();
     });
   }
-  public ngOnInit() {
-    Util.setNetworkStatus(this.network.type != "none");
+  public async ngOnInit() {
+    Util.NETWORK_STATUS = this.network.type != "none";
+    this.network.onConnect().subscribe(() => Util.NETWORK_STATUS = true);
+    this.network.onDisconnect().subscribe(() => Util.NETWORK_STATUS = false);
     this.dbService.openDb().subscribe();
-    this.network.onConnect().subscribe(() => Util.setNetworkStatus(true));
-    this.network.onDisconnect().subscribe(() => Util.setNetworkStatus(false));
     this.router.events.subscribe((event: RouterEvent) => {
       if (event instanceof NavigationEnd) {
         this.menu.enable(event.url !== '/');
@@ -39,7 +40,7 @@ export class AppComponent {
   }
   public signOff() {
     this.menu.close();
-    this.message.presentAlertConfirm('¿Cerrar sesión?', Util.getNetworkStatus() ? '' : 'Los datos que no se hayan sincronizado se perderán', [{
+    this.message.presentAlertConfirm('¿Cerrar sesión?', Util.NETWORK_STATUS ? '' : 'Los datos que no se hayan sincronizado se perderán', [{
       cssClass: 'danger',
       text: 'Salir',
       handler: () => {

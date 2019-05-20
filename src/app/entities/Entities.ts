@@ -40,10 +40,31 @@ export module Entities {
             this.toString = () => this.name;
         }
     }
+    export class Coordination {
+        lid: Number;
+        id: Number;
+        edition: string;
+        coordinated: Profile;
+        coordinator: Profile;
+        lcoordinated: Number;
+        lcoordinator: Number;
+        constructor(coordination?: Coordination) {
+            this.lid = coordination && coordination.lid || null;
+            this.id = coordination && coordination.id || null;
+            this.edition = coordination && coordination.edition || null;
+            this.coordinated = coordination && coordination.coordinated || new Profile();
+            this.coordinator = coordination && coordination.coordinator || new Profile();
+            this.lcoordinated = coordination && coordination.coordinated.lid || null;
+            this.lcoordinator = coordination && coordination.coordinator.lid || null;
+            this.toString = () => `${this.lcoordinator} coordina a ${this.lcoordinated}`;
+        }
+    }
     export class Synchronization {
+        coordinations: SynchronizationBatch = new SynchronizationBatch();
         options: SynchronizationBatch = new SynchronizationBatch();
         profiles: SynchronizationBatch = new SynchronizationBatch();
         constructor(synchronization?: Synchronization) {
+            this.coordinations = synchronization && synchronization.coordinations || new SynchronizationBatch();
             this.options = synchronization && synchronization.options || new SynchronizationBatch();
             this.profiles = synchronization && synchronization.profiles || new SynchronizationBatch();
         }

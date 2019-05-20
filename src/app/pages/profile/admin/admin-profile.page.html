@@ -15,7 +15,7 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <ion-slides pager="true" [options]="{ threshold: 30 }">
+  <ion-slides pager="true" [options]="{ threshold: 30 }" #iS>
     <ion-slide>
       <ion-list lines="none" style="width: 100%;">
         <ion-list-header>
@@ -31,32 +31,40 @@
     </ion-slide>
     <ion-slide>
       <ion-list lines="none" style="width: 100%;">
-        <ion-list-header> Coordina a: 0 </ion-list-header>
-        <ion-searchbar mode="ios"></ion-searchbar>
+        <ion-list-header>
+          <ion-label>Coordina a:</ion-label>
+        </ion-list-header>
         <ion-list lines="none">
           <ion-item>
-            <ion-label>Coordinaciones...</ion-label>
-            <ion-toggle>
-            </ion-toggle>
+            <ion-label>Esclavo</ion-label>
           </ion-item>
         </ion-list>
       </ion-list>
+      <ion-fab vertical="top" horizontal="end">
+        <ion-fab-button color="success" size="small">
+          <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
     </ion-slide>
     <ion-slide>
       <ion-list lines="none" style="width: 100%;">
-        <ion-list-header> Coordina a: 0 </ion-list-header>
-        <ion-searchbar mode="ios"></ion-searchbar>
+        <ion-list-header>
+          <ion-label>Es coordinado por:</ion-label>
+        </ion-list-header>
         <ion-list lines="none">
           <ion-item>
-            <ion-label>Coordinaciones...</ion-label>
-            <ion-toggle>
-            </ion-toggle>
+            <ion-label>Lider de segmento</ion-label>
           </ion-item>
         </ion-list>
       </ion-list>
+      <ion-fab vertical="top" horizontal="end" (click)="chooseCoordinator()">
+        <ion-fab-button color="success" size="small">
+          <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
     </ion-slide>
   </ion-slides>
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="profile.lid !== null">
+  <ion-fab vertical="bottom" horizontal="end" *ngIf="profile.lid !== null">
     <ion-fab-button color="danger" size="small" (click)="delete(profile)">
       <ion-icon name="trash"></ion-icon>
     </ion-fab-button>

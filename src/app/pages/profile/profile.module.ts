@@ -7,9 +7,10 @@ import { ProfileListPage } from './profile.list.page';
 import { AdminProfilePage } from './admin/admin-profile.page';
 import { Message } from 'src/app/components/utilities/message';
 import { ProfileService } from './profile.service';
+import { ChooseProfilePage } from './components/choose-profile.page';
 
 @NgModule({
-  declarations: [AdminProfilePage, ProfileListPage], entryComponents: [AdminProfilePage],
+  declarations: [AdminProfilePage, ChooseProfilePage, ProfileListPage], entryComponents: [AdminProfilePage, ChooseProfilePage],
   imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule, RouterModule.forChild([{
     component: ProfileListPage,
     path: ''

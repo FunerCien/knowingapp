@@ -1,5 +1,5 @@
 import { AdminProfilePage } from './admin/admin-profile.page';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Entities } from 'src/app/entities/Entities';
 import { IonSearchbar } from '@ionic/angular';
 import { Message } from 'src/app/components/utilities/message';
@@ -10,7 +10,7 @@ import { ProfileService } from './profile.service';
   selector: 'app-profile-list',
   templateUrl: 'profile.list.page.html'
 })
-export class ProfileListPage {
+export class ProfileListPage implements OnInit {
   private allProfiles: Entities.Profile[] = new Array();
   public profiles: Entities.Profile[] = new Array();
   constructor(private message: Message, private service: ProfileService) { }
@@ -19,12 +19,11 @@ export class ProfileListPage {
   public getAll(event?: any) {
     this.service.getAll().subscribe(p => {
       if (event) event.target.complete();
-      this.allProfiles = new Array();
-      p.forEach(o => this.allProfiles.push(new Entities.Profile(o)));
-      this.profiles = this.allProfiles;
+      this.allProfiles = p;
+      this.profiles = Util.sort(this.allProfiles);
     })
   }
   public info() { this.message.presentAlertConfirm('Perfiles', 'A los siervos se le asignan <b>perfiles</b> para definir sus coordinadores y gestionar sus permisos dentro de la aplicación.'); }
-  public ionViewWillEnter() { this.getAll() }
+  public ngOnInit() { this.getAll() }
   public search(searchbar: IonSearchbar) { this.profiles = Util.search(this.allProfiles, searchbar.value); }
 }

@@ -12,10 +12,10 @@ export class ProfileService {
     private httpHeaders = new HttpHeaders({ 'Content-Type': 'application/json' });
     private url: string = Util.URL + "/profile";
     constructor(private db: DatabaseService, private message: Message, private http: HttpClient) { }
-    private complete(message: string, observer: Observer<any>, loading?: HTMLIonLoadingElement) {
+    private complete(observer: Observer<any>, value: any, message?: string, loading?: HTMLIonLoadingElement) {
+        if (message) this.message.presentToast(message);
         if (loading) loading.dismiss();
-        this.message.presentToast(message);
-        observer.next([]);
+        observer.next(value);
         observer.complete();
     }
     public delete(profile: Entities.Profile): Observable<any> {
@@ -23,11 +23,11 @@ export class ProfileService {
             let loading = await this.message.createLoading("Eliminando");
             let message = `${profile} eliminado`;
             loading.present();
-            if (Util.getNetworkStatus()) return this.http.get<Number>(`${this.url}/delete/${profile.id}`, { headers: this.httpHeaders }).subscribe(() => this.complete(message, o, loading));
-            else this.db.delete(Table.profiles, profile.lid).subscribe(() => this.complete(message, o, loading));
+            if (Util.NETWORK_STATUS) return this.http.get<Number>(`${this.url}/delete/${profile.id}`, { headers: this.httpHeaders }).subscribe(() => this.complete(o, [], message, loading));
+            else this.db.delete(Table.profiles, profile.lid).subscribe(() => this.complete(o, [], message, loading));
         })
     }
-    public getAll(): Observable<Entities.Profile[]> { return this.db.selectAll(Table.profiles); }
+    public getAll(): Observable<Entities.Profile[]> { return Observable.create((o: Observer<Entities.Profile[]>) => this.db.selectAll(Table.profiles).subscribe(p => this.complete(o, p.map(pro => new Entities.Profile(pro))))); }
     public save(profile: Entities.Profile): Observable<Entities.Profile> {
         return Observable.create((o: Observer<Entities.Profile>) => {
             this.db.exist(Table.profiles, profile).subscribe(async e => {
@@ -35,8 +35,8 @@ export class ProfileService {
                     let loading = await this.message.createLoading("Guardando");
                     let message: string = `${profile} guardado`;
                     loading.present();
-                    if (Util.getNetworkStatus()) this.db.prepareSynchronization(profile, Table.profiles).subscribe(p => this.http.post<Entities.Profile>(`${this.url}/save`, p, { headers: this.httpHeaders }).subscribe(() => this.complete(message, o, loading)));
-                    else this.db.save(Table.profiles, [profile]).subscribe(() => this.complete(message, o, loading));
+                    if (Util.NETWORK_STATUS) this.db.prepareSynchronization(profile, Table.profiles).subscribe(p => this.http.post<Entities.Profile>(`${this.url}/save`, p, { headers: this.httpHeaders }).subscribe(() => this.complete(o, [], message, loading)));
+                    else this.db.save(Table.profiles, [profile]).subscribe(() => this.complete(o, [], message, loading));
                 } else {
                     let message: string = `Ya existe el perfil ${profile}`
                     o.error(message);

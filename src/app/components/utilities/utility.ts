@@ -2,7 +2,6 @@ import { DatePipe } from '@angular/common';
 
 export class Util {
     private static LOADING: HTMLIonLoadingElement;
-    private static NETWORK_STATUS: string = "NS";
     private static TOAST: any;
     public static setLoading(loading: HTMLIonLoadingElement, toast: any) {
         this.LOADING = loading;
@@ -16,8 +15,9 @@ export class Util {
         this.LOADING.dismiss();
         this.TOAST(message, color);
     }
+    public static NETWORK_STATUS: Boolean = false;
     public static URL: string = "http://knowingserver.herokuapp.com";
-    public static getNetworkStatus(): Boolean { return localStorage.getItem(this.NETWORK_STATUS) === "Y" }
+    public static VERSION: Number = 2;
     public static getDate(date?: Date): string { return new DatePipe("en-US").transform(date ? date : new Date(), "yyyy-MM-dd HH:mm:ss"); }
     public static search(list: Array<any>, value: string): Array<any> {
         return this.sort(list.filter(l => l.toString().toLowerCase().includes(value.toLowerCase())));
@@ -31,5 +31,4 @@ export class Util {
             else return 0;
         });;
     }
-    public static setNetworkStatus(status: Boolean) { localStorage.setItem(this.NETWORK_STATUS, status ? "Y" : "N") }
 }

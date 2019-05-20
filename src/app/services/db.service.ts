@@ -25,27 +25,27 @@ export class DatabaseService {
                     if (!exist) tables.push(table);
                 }
                 if (tables.length == 0) this.completeObserver(o, []);
-                else this.runSQL(SQL.INSERT_SYNCHRONIZATION(tables)).subscribe(() => this.completeObserver(o, []));
+                else SQL.INSERT_SYNCHRONIZATION(tables).subscribe(i => this.runSQL(i).subscribe(() => this.completeObserver(o, [])));
             })
         });
     }
-    private runSQL(sql: string): Observable<any> { return from(this.database.executeSql(sql, [])) }
     private persist(entities: any[], insert: any, update: any, validation: any): Observable<any> {
         return Observable.create((o: Observer<any>) => {
             let values: any[] = new Array();
-            entities.forEach(e => {
-                if (validation(e)) this.runSQL(update(e));
-                else values.push(e);
+            entities.forEach(en => {
+                if (validation(en)) update(en).subscribe((e: string) => this.runSQL(e));
+                else values.push(en);
             });
-            if (values.length != 0) this.runSQL(insert(values)).subscribe(() => this.completeObserver(o, []));
+            if (values.length != 0) insert(values).subscribe((v: string) => this.runSQL(v).subscribe(() => this.completeObserver(o, [])));
             else this.completeObserver(o, []);
         })
     }
+    private runSQL(sql: string): Observable<any> { return from(this.database.executeSql(sql, [])) }
     private select(query: string): Observable<any[]> {
-        return this.runSQL(query).pipe(map((d) => {
+        return this.runSQL(query).pipe(map(d => {
             let list = [];
             for (let i = 0; i < d.rows.length; i++) list.push(d.rows.item(i));
-            return Util.sort(list);
+            return list;
         }));
     }
     private selectSynchronizable(table: Table, edition: string, ledition: string): Observable<Entities.SynchronizationBatch> {
@@ -68,16 +68,19 @@ export class DatabaseService {
     }
     private sync(synchronization: Entities.SynchronizationBatch, table: Table): Observable<any> {
         switch (table) {
-            case Table.options: return this.syncSpecific(synchronization, table, (o: Entities.Option[]) => SQL.INSERT_OPTIONS(o), (o: Entities.Option) => SQL.UPDATE_OPTIONS(o));
-            case Table.profiles: return this.syncSpecific(synchronization, table, (o: Entities.Profile[]) => SQL.INSERT_PROFILES(o), (o: Entities.Profile) => SQL.UPDATE_PROFILES(o));
+            case Table.coordinations: return this.syncSpecific(synchronization, table, (s: Entities.Coordination[]) => Observable.create((o: Observer<string>) => SQL.INSERT_COORDINATIONS(s, this.select(SQL.ALL(Table.profiles))).subscribe(d => this.completeObserver(o, d))), (s: Entities.Coordination) => Observable.create((o: Observer<string>) => SQL.UPDATE_COORDINATIONS(s).subscribe(d => this.completeObserver(o, d))));
+            case Table.options: return this.syncSpecific(synchronization, table, (s: Entities.Option[]) => Observable.create((o: Observer<string>) => SQL.INSERT_OPTIONS(s).subscribe(d => this.completeObserver(o, d))), (s: Entities.Option) => Observable.create((o: Observer<string>) => SQL.UPDATE_OPTIONS(s).subscribe(d => this.completeObserver(o, d))));
+            case Table.profiles: return this.syncSpecific(synchronization, table, (s: Entities.Profile[]) => Observable.create((o: Observer<string>) => SQL.INSERT_PROFILES(s).subscribe(d => this.completeObserver(o, d))), (s: Entities.Profile) => Observable.create((o: Observer<string>) => SQL.UPDATE_PROFILES(s).subscribe(d => this.completeObserver(o, d))));
         }
     }
     private syncSpecific(batch: Entities.SynchronizationBatch, table: Table, insert: any, update: any): Observable<any> {
         return Observable.create((o: Observer<any>) => {
-            forkJoin(this.runSQL(SQL.UPDATE_SYNCHRONIZATION(batch.edition, table)), this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))).subscribe(() => {
-                this.select(SQL.IDS(table)).subscribe(r => {
-                    let ids = r.map(i => i.id);
-                    this.persist(batch.synchronizations, insert, update, (e: any) => ids.includes(e.id)).subscribe(() => this.completeObserver(o, []));
+            SQL.UPDATE_SYNCHRONIZATION(batch.edition, table).subscribe(u => {
+                forkJoin(this.runSQL(u), this.runSQL(SQL.DELETE_ID_NOT_IN(batch.existings, table))).subscribe(() => {
+                    this.select(SQL.IDS(table)).subscribe(r => {
+                        let ids = r.map(i => i.id);
+                        this.persist(batch.synchronizations, insert, update, (e: any) => ids.includes(e.id)).subscribe(() => this.completeObserver(o, []));
+                    });
                 });
             });
         });
@@ -87,6 +90,7 @@ export class DatabaseService {
     public exist(table: Table, entity: any): Observable<Boolean> {
         return Observable.create((o: Observer<Boolean>) => {
             switch (table) {
+                case Table.coordinations: this.select(SQL.EXIST_COORDINATION(entity)).subscribe(d => this.completeObserver(o, d[0].exist > 0));
                 case Table.profiles: this.select(SQL.EXIST_PROFILE(entity)).subscribe(d => this.completeObserver(o, d[0].exist > 0));
             }
         });
@@ -107,6 +111,7 @@ export class DatabaseService {
             from(this.sql.create({ location: SQL.LOCATION, name: SQL.DATABASE })).subscribe(d => {
                 this.database = d;
                 forkJoin(
+                    this.runSQL(SQL.CREATE_COORDINATIONS),
                     this.runSQL(SQL.CREATE_OPTIONS),
                     this.runSQL(SQL.CREATE_PROFILES),
                     this.runSQL(SQL.CREATE_SYNCHRONIZATIONS)
@@ -116,12 +121,13 @@ export class DatabaseService {
     }
     public save(table: Table, entities: any[]): Observable<any> {
         switch (table) {
+            case Table.coordinations: return this.persist(entities, (o: Entities.Coordination[]) => SQL.INSERT_COORDINATIONS(o, this.select(SQL.ALL(Table.profiles))), (o: Entities.Coordination) => SQL.UPDATE_COORDINATIONS_LOCAL(o), (e: any) => e.lid);
             case Table.profiles: return this.persist(entities, (o: Entities.Profile[]) => SQL.INSERT_PROFILES(o), (o: Entities.Profile) => SQL.UPDATE_PROFILES_LOCAL(o), (e: any) => e.lid);
         }
     }
     public selectAll(table: Table): Observable<any[]> {
         return Observable.create(async (o: Observer<any[]>) => {
-            if (Util.getNetworkStatus()) {
+            if (Util.NETWORK_STATUS) {
                 this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
                     let data = sync.filter(s => s.entity == table)[0];
                     this.selectSynchronizable(data.entity, data.edition, data.ledition).subscribe(f => this.service.syncSpecific(table, f).subscribe(s => this.sync(s, table).subscribe(() => this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data)))));
@@ -132,19 +138,24 @@ export class DatabaseService {
     public syncAll(): Observable<any> {
         return Observable.create((o: Observer<any>) => {
             this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
+                let coordinations = sync.filter(s => s.entity == Table.coordinations)[0];
                 let options = sync.filter(s => s.entity == Table.options)[0];
                 let profiles = sync.filter(s => s.entity == Table.profiles)[0];
                 forkJoin(
+                    this.selectSynchronizable(coordinations.entity, coordinations.edition, coordinations.ledition),
                     this.selectSynchronizable(options.entity, options.edition, options.ledition),
                     this.selectSynchronizable(profiles.entity, options.edition, profiles.ledition)
                 ).subscribe(f => {
                     let synchronization: Entities.Synchronization = new Entities.Synchronization();
-                    synchronization.options = f[0];
-                    synchronization.profiles = f[1];
-                    this.service.syncAll(synchronization).subscribe((d => forkJoin(
-                        this.sync(d.options, Table.options),
-                        this.sync(d.profiles, Table.profiles)
-                    ).subscribe(() => this.completeObserver(o, []))));
+                    synchronization.coordinations = f[0];
+                    synchronization.options = f[1];
+                    synchronization.profiles = f[2];
+                    this.service.syncAll(synchronization).subscribe((s => {
+                        forkJoin(
+                            this.sync(s.options, Table.options),
+                            this.sync(s.profiles, Table.profiles)
+                        ).subscribe(() => this.sync(s.coordinations, Table.coordinations).subscribe(() => this.completeObserver(o, [])))
+                    }));
                 });
             });
         });
