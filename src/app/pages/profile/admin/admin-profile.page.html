@@ -35,8 +35,9 @@
           <ion-label>Coordina a:</ion-label>
         </ion-list-header>
         <ion-list lines="none">
-          <ion-item>
-            <ion-label>Esclavo</ion-label>
+          <ion-item *ngFor="let coordinated of profile.coordinated">
+            <ion-icon name="pricetag" slot="start"></ion-icon>
+            <ion-label>{{coordinated.coordinated}}</ion-label>
           </ion-item>
         </ion-list>
       </ion-list>
@@ -52,8 +53,9 @@
           <ion-label>Es coordinado por:</ion-label>
         </ion-list-header>
         <ion-list lines="none">
-          <ion-item>
-            <ion-label>Lider de segmento</ion-label>
+          <ion-item *ngFor="let coordinator of profile.coordinators">
+            <ion-icon name="microphone" slot="start"></ion-icon>
+            <ion-label>{{coordinator.coordinator}}</ion-label>
           </ion-item>
         </ion-list>
       </ion-list>

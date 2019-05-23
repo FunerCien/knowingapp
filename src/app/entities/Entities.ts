@@ -32,11 +32,15 @@ export module Entities {
         id: Number;
         name: string;
         edition: string;
+        coordinated: Coordination[];
+        coordinators: Coordination[];
         constructor(profile?: Profile) {
             this.lid = profile && profile.lid || null;
             this.id = profile && profile.id || null;
             this.name = profile && profile.name || null;
             this.edition = profile && profile.edition || null;
+            this.coordinated = profile && profile.coordinated || [];
+            this.coordinators = profile && profile.coordinators || [];
             this.toString = () => this.name;
         }
     }
@@ -54,8 +58,8 @@ export module Entities {
             this.edition = coordination && coordination.edition || null;
             this.coordinated = coordination && coordination.coordinated || new Profile();
             this.coordinator = coordination && coordination.coordinator || new Profile();
-            this.lcoordinated = coordination && coordination.coordinated.lid || null;
-            this.lcoordinator = coordination && coordination.coordinator.lid || null;
+            this.lcoordinated = coordination && coordination.coordinated && coordination.coordinated.lid || null;
+            this.lcoordinator = coordination && coordination.coordinator && coordination.coordinator.lid || null;
             this.toString = () => `${this.lcoordinator} coordina a ${this.lcoordinated}`;
         }
     }

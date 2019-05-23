@@ -22,12 +22,7 @@ export class LoginPage {
   }
   public async walkInto() {
     if (Util.NETWORK_STATUS) {
-      let load = await this.message.createLoading("Sincronizando");
-      load.present();
-      this.dbService.dropDB().subscribe(() => this.dbService.openDb().subscribe(() => this.dbService.syncAll().subscribe(() => {
-        load.dismiss();
-        this.router.navigateByUrl("/permits");
-      })));
+      this.dbService.dropDB().subscribe(() => this.dbService.openDb().subscribe(() => this.router.navigateByUrl("/permits")));
     } else this.router.navigateByUrl("/permits");//this.message.presentToast("¡Necesitamos conectarnos!");
   }
 }

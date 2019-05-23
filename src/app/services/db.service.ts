@@ -29,6 +29,19 @@ export class DatabaseService {
             })
         });
     }
+    private prepareEntities(batch: Entities.SynchronizationBatch, table: Table): Entities.SynchronizationBatch {
+        switch (table) {
+            case Table.coordinations: batch.synchronizations = batch.synchronizations.map(c => {
+                let coordination: Entities.Coordination = new Entities.Coordination(c);
+                coordination.coordinated.id = c.rcoordinated;
+                coordination.coordinator.id = c.rcoordinator;
+                return coordination;
+            }); console.log(batch)
+                return batch;
+            default:
+                return batch;
+        }
+    }
     private persist(entities: any[], insert: any, update: any, validation: any): Observable<any> {
         return Observable.create((o: Observer<any>) => {
             let values: any[] = new Array();
@@ -36,7 +49,7 @@ export class DatabaseService {
                 if (validation(en)) this.runSQL(update(en));
                 else values.push(en);
             });
-            if (values.length != 0) this.runSQL(insert(values)).subscribe(() => this.completeObserver(o, []));
+            if (values.length != 0) insert(values).subscribe((v: string) => this.runSQL(v).subscribe(() => this.completeObserver(o, [])));
             else this.completeObserver(o, []);
         });
     }
@@ -60,17 +73,17 @@ export class DatabaseService {
                 });
                 if (synchronizables.length > 0) forkJoin(synchronizables).subscribe(sync => {
                     sync.forEach(s => batch.synchronizations.push(s));
-                    this.completeObserver(o, batch);
+                    this.completeObserver(o, this.prepareEntities(batch, table));
                 });
-                else this.completeObserver(o, batch);
+                else this.completeObserver(o, this.prepareEntities(batch, table));
             });
         });
     }
     private sync(synchronization: Entities.SynchronizationBatch, table: Table): Observable<any> {
         switch (table) {
-            case Table.coordinations: return this.syncSpecific(synchronization, table, (s: Entities.Coordination[]) => SQL.INSERT_COORDINATIONS(s), (s: Entities.Coordination) => SQL.UPDATE_COORDINATIONS(s));
-            case Table.options: return this.syncSpecific(synchronization, table, (s: Entities.Option[]) => SQL.INSERT_OPTIONS(s), (s: Entities.Option) => SQL.UPDATE_OPTIONS(s));
-            case Table.profiles: return this.syncSpecific(synchronization, table, (s: Entities.Profile[]) => SQL.INSERT_PROFILES(s), (s: Entities.Profile) => SQL.UPDATE_PROFILES(s));
+            case Table.coordinations: return this.syncSpecific(synchronization, table, (s: Entities.Coordination[]) => Observable.create((o: Observer<string>) => this.select(SQL.ID_LID(Table.profiles)).subscribe(p => this.completeObserver(o, SQL.INSERT_COORDINATIONS(s, p)))), (s: Entities.Coordination) => SQL.UPDATE_COORDINATIONS(s));
+            case Table.options: return this.syncSpecific(synchronization, table, (s: Entities.Option[]) => Observable.create((o: Observer<string>) => this.completeObserver(o, SQL.INSERT_OPTIONS(s))), (s: Entities.Option) => SQL.UPDATE_OPTIONS(s));
+            case Table.profiles: return this.syncSpecific(synchronization, table, (s: Entities.Profile[]) => Observable.create((o: Observer<string>) => this.completeObserver(o, SQL.INSERT_PROFILES(s))), (s: Entities.Profile) => SQL.UPDATE_PROFILES(s));
         }
     }
     private syncSpecific(batch: Entities.SynchronizationBatch, table: Table, insert: any, update: any): Observable<any> {
@@ -119,8 +132,8 @@ export class DatabaseService {
     }
     public save(table: Table, entities: any[]): Observable<any> {
         switch (table) {
-            case Table.coordinations: return this.persist(entities, (e: Entities.Coordination[]) => SQL.INSERT_COORDINATIONS(e), (o: Entities.Coordination) => SQL.UPDATE_COORDINATIONS_LOCAL(o), (e: any) => e.lid);
-            case Table.profiles: return this.persist(entities, (e: Entities.Profile[]) => SQL.INSERT_PROFILES(e), (e: Entities.Profile) => SQL.UPDATE_PROFILES_LOCAL(e), (e: any) => e.lid);
+            case Table.coordinations: return this.persist(entities, (e: Entities.Coordination[]) => Observable.create((o: Observer<string>) => this.select(SQL.ID_LID(Table.profiles)).subscribe(p => this.completeObserver(o, SQL.INSERT_COORDINATIONS(e, p)))), (o: Entities.Coordination) => SQL.UPDATE_COORDINATIONS_LOCAL(o), (e: any) => e.lid);
+            case Table.profiles: return this.persist(entities, (e: Entities.Profile[]) => Observable.create((o: Observer<string>) => this.completeObserver(o, SQL.INSERT_PROFILES(e))), (e: Entities.Profile) => SQL.UPDATE_PROFILES_LOCAL(e), (e: any) => e.lid);
         }
     }
     public selectAll(table: Table): Observable<any[]> {
@@ -133,7 +146,7 @@ export class DatabaseService {
             } else this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data));
         });
     }
-    public syncAll(): Observable<any> {
+    /*public syncAll(): Observable<any> {
         return Observable.create((o: Observer<any>) => {
             this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
                 let coordinations = sync.filter(s => s.entity == Table.coordinations)[0];
@@ -164,5 +177,5 @@ export class DatabaseService {
                 });
             });
         });
-    }
+    }*/
 }

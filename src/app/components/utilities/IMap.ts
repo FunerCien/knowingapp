@@ -1,0 +1,1 @@
+export interface IMap { [details: string]: any; } 

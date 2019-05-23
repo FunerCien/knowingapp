@@ -6,8 +6,8 @@ export class SQL {
         lid INTEGER PRIMARY KEY AUTOINCREMENT,
         id INTEGER,
         edition TEXT NOT NULL,
-        coordinated INTEGER NOT NULL,
-        coordinator INTEGER NOT NULL,
+        rcoordinated INTEGER NOT NULL,
+        rcoordinator INTEGER NOT NULL,
         lcoordinated INTEGER NOT NULL,
         lcoordinator INTEGER NOT NULL,
         UNIQUE(lcoordinated,lcoordinator));`;
@@ -38,8 +38,14 @@ export class SQL {
     static IDS(table: Table): string { return `SELECT id FROM ${table} WHERE id IS NOT NULL;`; }
     static EXIST_COORDINATION(coordination: Entities.Coordination): string { return `SELECT COUNT(0) exist FROM coordinations WHERE lid<>${coordination.lid ? coordination.lid : 0} AND lcoordinated=${coordination.lcoordinated} AND lcoordinator=${coordination.lcoordinator};`; }
     static EXIST_PROFILE(profile: Entities.Profile): string { return `SELECT COUNT(0) exist FROM profiles WHERE lid<>${profile.lid ? profile.lid : 0} AND UPPER(name)=UPPER('${profile.name}');`; }
-    static INSERT_COORDINATIONS(coordinations: Entities.Coordination[]): string {
-        return `INSERT INTO coordinations (id,edition,coordinated,coordinator,lcoordinated,lcoordinator)
+    static INSERT_COORDINATIONS(coordinations: Entities.Coordination[], idLidProfiles: any[]): string {
+        idLidProfiles.forEach(p => {
+            coordinations.forEach(c => {
+                if (c.coordinated.id == p.id) c.lcoordinated = p.lid;
+                if (c.coordinator.id == p.id) c.lcoordinator = p.lid;
+            });
+        });
+        return `INSERT INTO coordinations (id,edition,rcoordinated,rcoordinator,lcoordinated,lcoordinator)
                     VALUES ${coordinations.map(c => `(${c.id},'${Util.getDate()}',${c.coordinated.id},${c.coordinator.id},${c.lcoordinated},${c.lcoordinator})`)};`;
     }
     static INSERT_OPTIONS(options: Entities.Option[]): string {
@@ -56,7 +62,7 @@ export class SQL {
     }
     static UPDATE_COORDINATIONS(coordination: Entities.Coordination): string {
         return `UPDATE profiles 
-            SET edition='${Util.getDate()}',coordinated=${coordination.coordinated.id},coordinator=${coordination.coordinator.id},lcoordinated=${coordination.lcoordinated},lcoordinator=${coordination.lcoordinator}
+            SET edition='${Util.getDate()}',rcoordinated=${coordination.coordinated.id},rcoordinator=${coordination.coordinator.id},lcoordinated=${coordination.lcoordinated},lcoordinator=${coordination.lcoordinator}
             WHERE id=${coordination.id};`
     }
     static UPDATE_OPTIONS(option: Entities.Option): string {
@@ -71,7 +77,7 @@ export class SQL {
     }
     static UPDATE_COORDINATIONS_LOCAL(coordination: Entities.Coordination) {
         return `UPDATE profiles 
-            SET edition='${Util.getDate()}',coordinated=${coordination.coordinated.id},coordinator=${coordination.coordinator.id},lcoordinated=${coordination.lcoordinated},lcoordinator=${coordination.lcoordinator}
+            SET edition='${Util.getDate()}',rcoordinated=${coordination.coordinated.id},rcoordinator=${coordination.coordinator.id},lcoordinated=${coordination.lcoordinated},lcoordinator=${coordination.lcoordinator}
             WHERE lid=${coordination.lid};`
     }
     static UPDATE_PROFILES_LOCAL(profile: Entities.Profile) {

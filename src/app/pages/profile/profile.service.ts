@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Entities } from 'src/app/entities/Entities';
-import { Observable, Observer } from 'rxjs';
+import { Observable, Observer, forkJoin } from 'rxjs';
 import { Util } from 'src/app/components/utilities/utility';
 import { DatabaseService } from 'src/app/services/db.service';
 import { Table } from 'src/app/services/db.sql';
 import { Message } from 'src/app/components/utilities/message';
+import { IMap } from 'src/app/components/utilities/IMap';
 
 @Injectable()
 export class ProfileService {
@@ -27,7 +28,31 @@ export class ProfileService {
             else this.db.delete(Table.profiles, profile.lid).subscribe(() => this.complete(o, [], message, loading));
         })
     }
-    public getAll(): Observable<Entities.Profile[]> { return Observable.create((o: Observer<Entities.Profile[]>) => this.db.selectAll(Table.profiles).subscribe(p => this.complete(o, p.map(pro => new Entities.Profile(pro))))); }
+    public getAll(): Observable<Entities.Profile[]> {
+        return Observable.create((o: Observer<Entities.Profile[]>) => this.db.selectAll(Table.profiles).subscribe(profiles => {
+            this.db.selectAll(Table.coordinations).subscribe(coordinations => {
+                let profilesMap: IMap = {};
+                profiles.forEach(pro => profilesMap[pro.lid] = new Entities.Profile(pro));
+                this.complete(o, profiles.map(pro => {
+                    pro = new Entities.Profile(pro);
+                    coordinations.forEach(co => {
+                        if (co.lcoordinated == pro.lid) {
+                            let coordination: Entities.Coordination = new Entities.Coordination(co);
+                            coordination.coordinated = pro;
+                            coordination.coordinator = profilesMap[co.lcoordinator.toString()];
+                            pro.coordinators.push(coordination);
+                        } else if (co.lcoordinator == pro.lid) {
+                            let coordination: Entities.Coordination = new Entities.Coordination(co);
+                            coordination.coordinator = pro;
+                            coordination.coordinated = profilesMap[co.lcoordinated.toString()];
+                            pro.coordinated.push(coordination);
+                        }
+                    });
+                    return pro;
+                }));
+            });
+        }));
+    }
     public save(profile: Entities.Profile): Observable<Entities.Profile> {
         return Observable.create((o: Observer<Entities.Profile>) => {
             this.db.exist(Table.profiles, profile).subscribe(async e => {

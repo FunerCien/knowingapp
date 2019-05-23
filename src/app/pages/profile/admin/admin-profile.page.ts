@@ -13,7 +13,7 @@ import { ChooseProfilePage } from '../components/choose-profile.page';
 })
 export class AdminProfilePage implements OnInit {
   @Input() profile: Entities.Profile;
-  public profiles: Entities.Profile[];
+  @Input() profiles: Entities.Profile[];
   public form: FormGroup;
   constructor(private message: Message, private modal: ModalController, private service: ProfileService) { }
   public async chooseCoordinator() {
@@ -24,10 +24,7 @@ export class AdminProfilePage implements OnInit {
     }, (p => console.log(p)))).present();
   }
   public close() { this.modal.dismiss(); }
-  public ngOnInit() {
-    this.form = Forms.getProfile(this.profile);
-    this.service.getAll().subscribe(p => this.profiles = p);
-  }
+  public ngOnInit() { this.form = Forms.getProfile(this.profile); }
   public saveProfile() {
     this.form = Forms.getProfile(this.form.value);
     if (!Forms.getProfile(this.form.value).invalid) this.service.save(new Entities.Profile(this.form.value)).subscribe(() => this.modal.dismiss());
