@@ -11,13 +11,14 @@ export class Message {
             animated: true,
             backdropDismiss: true,
             buttons: buttons,
+            cssClass: "action-sheet",
             header: header,
             keyboardClose: true,
             translucent: false
         });
         actionSheet.present();
     }
-    public async presentAlertConfirm(header: string, message: string, buttons?: { cssClass?: string, text: string, role?: string, handler: any }[]) {
+    public async presentAlert(header: string, message: string, buttons?: { cssClass?: string, text: string, role?: string, handler: any }[]) {
         let but: { cssClass?: string, text: string, role?: string, handler: any }[] = [{
             text: "Cancelar",
             cssClass: "dark",
@@ -61,7 +62,7 @@ export class Message {
             mode: "ios",
             showBackdrop: true
         });
-        modal.onDidDismiss().then(() => dismiss());
+        modal.onDidDismiss().then((data?: any) => { if (data) dismiss(data); else dismiss() });
         return modal;
     }
     public async presentToast(message: string, color?: string) {

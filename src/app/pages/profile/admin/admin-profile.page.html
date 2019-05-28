@@ -35,13 +35,13 @@
           <ion-label>Coordina a:</ion-label>
         </ion-list-header>
         <ion-list lines="none">
-          <ion-item *ngFor="let coordinated of profile.coordinated">
+          <ion-item *ngFor="let coordinated of profile.coordinated" (click)="detail(coordinated,false)">
             <ion-icon name="pricetag" slot="start"></ion-icon>
             <ion-label>{{coordinated.coordinated}}</ion-label>
           </ion-item>
         </ion-list>
       </ion-list>
-      <ion-fab vertical="top" horizontal="end">
+      <ion-fab vertical="top" horizontal="end" (click)="chooseCoordinator(false)">
         <ion-fab-button color="success" size="small">
           <ion-icon name="add"></ion-icon>
         </ion-fab-button>
@@ -53,22 +53,22 @@
           <ion-label>Es coordinado por:</ion-label>
         </ion-list-header>
         <ion-list lines="none">
-          <ion-item *ngFor="let coordinator of profile.coordinators">
+          <ion-item *ngFor="let coordinator of profile.coordinators" (click)="detail(coordinator,true)">
             <ion-icon name="microphone" slot="start"></ion-icon>
             <ion-label>{{coordinator.coordinator}}</ion-label>
           </ion-item>
         </ion-list>
       </ion-list>
-      <ion-fab vertical="top" horizontal="end" (click)="chooseCoordinator()">
+      <ion-fab vertical="top" horizontal="end" (click)="chooseCoordinator(true)">
         <ion-fab-button color="success" size="small">
           <ion-icon name="add"></ion-icon>
         </ion-fab-button>
       </ion-fab>
     </ion-slide>
   </ion-slides>
-  <ion-fab vertical="bottom" horizontal="end" *ngIf="profile.lid !== null">
-    <ion-fab-button color="danger" size="small" (click)="delete(profile)">
-      <ion-icon name="trash"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
 </ion-content>
+<ion-fab vertical="bottom" horizontal="end" *ngIf="profile.lid !== null">
+  <ion-fab-button color="danger" (click)="delete(profile)">
+    <ion-icon name="trash"></ion-icon>
+  </ion-fab-button>
+</ion-fab>

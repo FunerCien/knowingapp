@@ -36,7 +36,7 @@ export class DatabaseService {
                 coordination.coordinated.id = c.rcoordinated;
                 coordination.coordinator.id = c.rcoordinator;
                 return coordination;
-            }); console.log(batch)
+            });
                 return batch;
             default:
                 return batch;
@@ -46,7 +46,7 @@ export class DatabaseService {
         return Observable.create((o: Observer<any>) => {
             let values: any[] = new Array();
             entities.forEach(en => {
-                if (validation(en)) this.runSQL(update(en));
+                if (validation(en)) update(en).subscribe((v: string) => this.runSQL(v));
                 else values.push(en);
             });
             if (values.length != 0) insert(values).subscribe((v: string) => this.runSQL(v).subscribe(() => this.completeObserver(o, [])));
@@ -81,9 +81,8 @@ export class DatabaseService {
     }
     private sync(synchronization: Entities.SynchronizationBatch, table: Table): Observable<any> {
         switch (table) {
-            case Table.coordinations: return this.syncSpecific(synchronization, table, (s: Entities.Coordination[]) => Observable.create((o: Observer<string>) => this.select(SQL.ID_LID(Table.profiles)).subscribe(p => this.completeObserver(o, SQL.INSERT_COORDINATIONS(s, p)))), (s: Entities.Coordination) => SQL.UPDATE_COORDINATIONS(s));
-            case Table.options: return this.syncSpecific(synchronization, table, (s: Entities.Option[]) => Observable.create((o: Observer<string>) => this.completeObserver(o, SQL.INSERT_OPTIONS(s))), (s: Entities.Option) => SQL.UPDATE_OPTIONS(s));
-            case Table.profiles: return this.syncSpecific(synchronization, table, (s: Entities.Profile[]) => Observable.create((o: Observer<string>) => this.completeObserver(o, SQL.INSERT_PROFILES(s))), (s: Entities.Profile) => SQL.UPDATE_PROFILES(s));
+            case Table.coordinations: return this.syncSpecific(synchronization, table, (s: Entities.Coordination[]) => Observable.create((o: Observer<string>) => this.select(SQL.ID_LID(Table.profiles)).subscribe(p => this.completeObserver(o, SQL.INSERT_COORDINATIONS(s, p)))), (e: Entities.Coordination) => Observable.create((o: Observer<string>) => this.select(SQL.ID_LID(Table.profiles)).subscribe(p => this.completeObserver(o, SQL.UPDATE_COORDINATIONS(e, p)))));
+            case Table.profiles: return this.syncSpecific(synchronization, table, (s: Entities.Profile[]) => Observable.create((o: Observer<string>) => this.completeObserver(o, SQL.INSERT_PROFILES(s))), (s: Entities.Profile) => Observable.create((o: Observer<string>) => this.completeObserver(o, SQL.UPDATE_PROFILES(s))));
         }
     }
     private syncSpecific(batch: Entities.SynchronizationBatch, table: Table, insert: any, update: any): Observable<any> {
@@ -123,7 +122,6 @@ export class DatabaseService {
                 this.database = d;
                 forkJoin(
                     this.runSQL(SQL.CREATE_COORDINATIONS),
-                    this.runSQL(SQL.CREATE_OPTIONS),
                     this.runSQL(SQL.CREATE_PROFILES),
                     this.runSQL(SQL.CREATE_SYNCHRONIZATIONS)
                 ).subscribe(() => this.insertSynchronizations().subscribe(() => this.completeObserver(o, [])));
@@ -132,8 +130,8 @@ export class DatabaseService {
     }
     public save(table: Table, entities: any[]): Observable<any> {
         switch (table) {
-            case Table.coordinations: return this.persist(entities, (e: Entities.Coordination[]) => Observable.create((o: Observer<string>) => this.select(SQL.ID_LID(Table.profiles)).subscribe(p => this.completeObserver(o, SQL.INSERT_COORDINATIONS(e, p)))), (o: Entities.Coordination) => SQL.UPDATE_COORDINATIONS_LOCAL(o), (e: any) => e.lid);
-            case Table.profiles: return this.persist(entities, (e: Entities.Profile[]) => Observable.create((o: Observer<string>) => this.completeObserver(o, SQL.INSERT_PROFILES(e))), (e: Entities.Profile) => SQL.UPDATE_PROFILES_LOCAL(e), (e: any) => e.lid);
+            case Table.coordinations: return this.persist(entities, (e: Entities.Coordination[]) => Observable.create((o: Observer<string>) => this.select(SQL.ID_LID(Table.profiles)).subscribe(p => this.completeObserver(o, SQL.INSERT_COORDINATIONS(e, p)))), (e: Entities.Coordination) => Observable.create((o: Observer<string>) => this.select(SQL.ID_LID(Table.profiles)).subscribe(p => this.completeObserver(o, SQL.UPDATE_COORDINATIONS_LOCAL(e, p)))), (e: any) => e.lid);
+            case Table.profiles: return this.persist(entities, (e: Entities.Profile[]) => Observable.create((o: Observer<string>) => this.completeObserver(o, SQL.INSERT_PROFILES(e))), (e: Entities.Profile) => Observable.create((o: Observer<string>) => this.completeObserver(o, SQL.UPDATE_PROFILES_LOCAL(e))), (e: any) => e.lid);
         }
     }
     public selectAll(table: Table): Observable<any[]> {

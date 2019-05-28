@@ -11,13 +11,6 @@ export class SQL {
         lcoordinated INTEGER NOT NULL,
         lcoordinator INTEGER NOT NULL,
         UNIQUE(lcoordinated,lcoordinator));`;
-    static CREATE_OPTIONS: string = `CREATE TABLE IF NOT EXISTS options(
-        lid INTEGER PRIMARY KEY AUTOINCREMENT,
-        id INTEGER,
-        action TEXT NOT NULL,
-        module TEXT NOT NULL,
-        edition TEXT NOT NULL,
-        UNIQUE(action, module));`;
     static CREATE_PROFILES: string = `CREATE TABLE IF NOT EXISTS profiles(
         lid INTEGER PRIMARY KEY AUTOINCREMENT,
         id INTEGER,
@@ -41,16 +34,14 @@ export class SQL {
     static INSERT_COORDINATIONS(coordinations: Entities.Coordination[], idLidProfiles: any[]): string {
         idLidProfiles.forEach(p => {
             coordinations.forEach(c => {
-                if (c.coordinated.id == p.id) c.lcoordinated = p.lid;
-                if (c.coordinator.id == p.id) c.lcoordinator = p.lid;
+                if (p.id) {
+                    if (c.coordinated.id == p.id) c.lcoordinated = p.lid;
+                    if (c.coordinator.id == p.id) c.lcoordinator = p.lid;
+                }
             });
         });
         return `INSERT INTO coordinations (id,edition,rcoordinated,rcoordinator,lcoordinated,lcoordinator)
-                    VALUES ${coordinations.map(c => `(${c.id},'${Util.getDate()}',${c.coordinated.id},${c.coordinator.id},${c.lcoordinated},${c.lcoordinator})`)};`;
-    }
-    static INSERT_OPTIONS(options: Entities.Option[]): string {
-        return `INSERT INTO options (id,action,module,edition) 
-            VALUES ${options.map(o => `(${o.id}, '${o.action}', '${o.module}', '${Util.getDate()}')`)};`
+            VALUES ${coordinations.map(c => `(${c.id},'${Util.getDate()}',${c.coordinated.id},${c.coordinator.id},${c.lcoordinated},${c.lcoordinator})`)};`;
     }
     static INSERT_PROFILES(profiles: Entities.Profile[]): string {
         return `INSERT INTO profiles (id,name,edition) 
@@ -60,23 +51,26 @@ export class SQL {
         return `INSERT INTO synchronizations(entity,edition,ledition) 
             VALUES ${tables.map(t => `('${t}','2000-01-01 00:00:00','2000-01-01 00:00:00')`)};`
     }
-    static UPDATE_COORDINATIONS(coordination: Entities.Coordination): string {
-        return `UPDATE profiles 
+    static UPDATE_COORDINATIONS(coordination: Entities.Coordination, idLidProfiles: any[]): string {
+        idLidProfiles.forEach(p => {
+            if (coordination.coordinated.id == p.id) coordination.lcoordinated = p.lid;
+            if (coordination.coordinator.id == p.id) coordination.lcoordinator = p.lid;
+        });
+        return `UPDATE coordinations 
             SET edition='${Util.getDate()}',rcoordinated=${coordination.coordinated.id},rcoordinator=${coordination.coordinator.id},lcoordinated=${coordination.lcoordinated},lcoordinator=${coordination.lcoordinator}
             WHERE id=${coordination.id};`
-    }
-    static UPDATE_OPTIONS(option: Entities.Option): string {
-        return `UPDATE options 
-            SET action='${option.action}',module='${option.module}', edition='${Util.getDate()}' 
-            WHERE id=${option.id};`
     }
     static UPDATE_PROFILES(profile: Entities.Profile): string {
         return `UPDATE profiles 
             SET name='${profile.name}', edition='${Util.getDate()}' 
             WHERE id=${profile.id};`
     }
-    static UPDATE_COORDINATIONS_LOCAL(coordination: Entities.Coordination) {
-        return `UPDATE profiles 
+    static UPDATE_COORDINATIONS_LOCAL(coordination: Entities.Coordination, idLidProfiles: any[]) {
+        idLidProfiles.forEach(p => {
+            if (coordination.coordinated.lid == p.lid) coordination.coordinated.id = p.id;
+            if (coordination.coordinator.lid == p.lid) coordination.coordinator.id = p.id;
+        });
+        return `UPDATE coordinations 
             SET edition='${Util.getDate()}',rcoordinated=${coordination.coordinated.id},rcoordinator=${coordination.coordinator.id},lcoordinated=${coordination.lcoordinated},lcoordinator=${coordination.lcoordinator}
             WHERE lid=${coordination.lid};`
     }
@@ -94,7 +88,6 @@ export class SQL {
 
 export enum Table {
     coordinations = "coordinations",
-    options = "options",
     profiles = "profiles",
     synchronizations = "synchronizations"
 }

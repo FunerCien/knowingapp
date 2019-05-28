@@ -19,6 +19,7 @@ export class LoginPage {
       loading.dismiss();
       this.updated = true;
     });
+    this.updated = true;//DELETE ON PRODUCTION
   }
   public async walkInto() {
     if (Util.NETWORK_STATUS) {

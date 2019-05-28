@@ -26,10 +26,10 @@ export class ProfileListPage implements OnInit {
     this.service.getAll().subscribe(p => {
       if (callback) callback();
       this.allProfiles = p;
-      this.profiles = Util.sort(this.allProfiles);
+      this.profiles = this.allProfiles;
     })
   }
-  public info() { this.message.presentAlertConfirm('Perfiles', 'A los siervos se le asignan <b>perfiles</b> para definir sus coordinadores y gestionar sus permisos dentro de la aplicación.'); }
+  public info() { this.message.presentAlert('Perfiles', 'A los siervos se le asignan <b>perfiles</b> para definir sus coordinadores y gestionar sus permisos dentro de la aplicación.'); }
   public async ngOnInit() {
     let loading = await this.message.createLoading();
     loading.present();

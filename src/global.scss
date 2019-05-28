@@ -10,6 +10,27 @@
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
 
+.action-sheet {
+  .danger {
+    .action-sheet-icon {
+      color: red;
+    }
+    color: red;
+  }
+  .primary {
+    .action-sheet-icon {
+      color: blue;
+    }
+    color: blue;
+  }
+  .success {
+    .action-sheet-icon {
+      color: green;
+    }
+    color: green;
+  }
+}
+
 .alert {
   button.alert-button.dark {
     color: black;
@@ -17,6 +38,10 @@
   button.alert-button.danger {
     color: red;
   }
+}
+
+.slides{
+  min-height: 100%;
 }
 
 .swiper-pagination {

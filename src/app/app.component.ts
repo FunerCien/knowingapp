@@ -40,7 +40,7 @@ export class AppComponent {
   }
   public signOff() {
     this.menu.close();
-    this.message.presentAlertConfirm('¿Cerrar sesión?', Util.NETWORK_STATUS ? '' : 'Los datos que no se hayan sincronizado se perderán', [{
+    this.message.presentAlert('¿Cerrar sesión?', Util.NETWORK_STATUS ? '' : 'Los datos que no se hayan sincronizado se perderán', [{
       cssClass: 'danger',
       text: 'Salir',
       handler: () => {
@@ -51,6 +51,6 @@ export class AppComponent {
   }
   public version() {
     this.menu.close();
-    this.message.presentAlertConfirm('v0.0.002 BETA', 'Versión inestable');
+    this.message.presentAlert('v0.0.002 BETA', 'Versión inestable');
   }
 }

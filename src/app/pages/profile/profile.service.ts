@@ -26,14 +26,14 @@ export class ProfileService {
             loading.present();
             if (Util.NETWORK_STATUS) return this.http.get<Number>(`${this.url}/delete/${profile.id}`, { headers: this.httpHeaders }).subscribe(() => this.complete(o, [], message, loading));
             else this.db.delete(Table.profiles, profile.lid).subscribe(() => this.complete(o, [], message, loading));
-        })
+        });
     }
     public getAll(): Observable<Entities.Profile[]> {
         return Observable.create((o: Observer<Entities.Profile[]>) => this.db.selectAll(Table.profiles).subscribe(profiles => {
             this.db.selectAll(Table.coordinations).subscribe(coordinations => {
                 let profilesMap: IMap = {};
                 profiles.forEach(pro => profilesMap[pro.lid] = new Entities.Profile(pro));
-                this.complete(o, profiles.map(pro => {
+                this.complete(o, Util.sort(profiles.map(pro => {
                     pro = new Entities.Profile(pro);
                     coordinations.forEach(co => {
                         if (co.lcoordinated == pro.lid) {
@@ -49,7 +49,7 @@ export class ProfileService {
                         }
                     });
                     return pro;
-                }));
+                })));
             });
         }));
     }
