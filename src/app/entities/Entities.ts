@@ -56,11 +56,11 @@ export module Entities {
             this.lid = coordination && coordination.lid || null;
             this.id = coordination && coordination.id || null;
             this.edition = coordination && coordination.edition || null;
-            this.coordinated = coordination && coordination.coordinated || new Profile();
-            this.coordinator = coordination && coordination.coordinator || new Profile();
+            this.coordinated = coordination && new Profile(coordination.coordinated) || new Profile();
+            this.coordinator = coordination && new Profile(coordination.coordinator) || new Profile();
             this.lcoordinated = coordination && coordination.coordinated && coordination.coordinated.lid || null;
             this.lcoordinator = coordination && coordination.coordinator && coordination.coordinator.lid || null;
-            this.toString = () => `${this.lcoordinator} coordina a ${this.lcoordinated}`;
+            this.toString = () => `${this.coordinator} coordina a ${this.coordinated}`;
         }
     }
     export class Synchronization {

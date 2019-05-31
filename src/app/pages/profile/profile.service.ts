@@ -12,6 +12,7 @@ import { IMap } from 'src/app/components/utilities/IMap';
 export class ProfileService {
     private httpHeaders = new HttpHeaders({ 'Content-Type': 'application/json' });
     private url: string = Util.URL + "/profile";
+    private urlCoordination: string = Util.URL + "/coordination";
     constructor(private db: DatabaseService, private message: Message, private http: HttpClient) { }
     private complete(observer: Observer<any>, value: any, message?: string, loading?: HTMLIonLoadingElement) {
         if (message) this.message.presentToast(message);
@@ -26,6 +27,12 @@ export class ProfileService {
             loading.present();
             if (Util.NETWORK_STATUS) return this.http.get<Number>(`${this.url}/delete/${profile.id}`, { headers: this.httpHeaders }).subscribe(() => this.complete(o, [], message, loading));
             else this.db.delete(Table.profiles, profile.lid).subscribe(() => this.complete(o, [], message, loading));
+        });
+    }
+    public deleteCoordination(coordination: Entities.Coordination): Observable<any> {
+        return Observable.create(async (o: Observer<any>) => {
+            if (Util.NETWORK_STATUS) return this.http.get<Number>(`${this.urlCoordination}/delete/${coordination.id}`, { headers: this.httpHeaders }).subscribe(() => this.complete(o, []));
+            else this.db.delete(Table.coordinations, coordination.lid).subscribe(() => this.complete(o, []));
         });
     }
     public getAll(): Observable<Entities.Profile[]> {
@@ -64,6 +71,24 @@ export class ProfileService {
                     else this.db.save(Table.profiles, [profile]).subscribe(() => this.complete(o, [], message, loading));
                 } else {
                     let message: string = `Ya existe el perfil ${profile}`
+                    o.error(message);
+                    this.message.presentToast(message);
+                }
+            });
+        });
+    }
+    public saveCoordination(coordination: Entities.Coordination): Observable<Entities.Coordination> {
+        return Observable.create((o: Observer<Entities.Coordination>) => {
+            this.db.exist(Table.coordinations, coordination).subscribe(async e => {
+                if (!e) {
+                    coordination.coordinated.coordinated = [];
+                    coordination.coordinated.coordinators = [];
+                    coordination.coordinator.coordinated = [];
+                    coordination.coordinator.coordinators = [];
+                    if (Util.NETWORK_STATUS) this.db.prepareSynchronization(coordination, Table.coordinations).subscribe(coo => this.http.post<Entities.Coordination>(`${this.urlCoordination}/save`, coo, { headers: this.httpHeaders }).subscribe(c => this.complete(o, new Entities.Coordination(c))));
+                    else this.db.save(Table.coordinations, [coordination]).subscribe(() => this.complete(o, coordination));
+                } else {
+                    let message: string = `La coordinación ya esta asignada`;
                     o.error(message);
                     this.message.presentToast(message);
                 }

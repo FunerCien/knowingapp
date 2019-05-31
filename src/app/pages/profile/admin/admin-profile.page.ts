@@ -15,7 +15,6 @@ import { ProfileUtils } from '../profile.utils';
 export class AdminProfilePage implements OnInit {
   @Input() profile: Entities.Profile;
   @Input() profiles: Entities.Profile[];
-  private util: ProfileUtils;
   public form: FormGroup;
   constructor(private message: Message, private modal: ModalController, private service: ProfileService) { }
   private isCoordinatedBy(profile: Entities.Profile): Boolean {
@@ -37,11 +36,26 @@ export class AdminProfilePage implements OnInit {
         else if (this.isCoordinatedBy(p)) status = ChooseProfileStatus.COORDINATOR;
         return new ChooseProfile({ icon: coordinator ? 'microphone' : 'pricetag', profile: p, status: status });
       })
-    }, ((d: any) => {
+    }, (async (d: any) => {
       if (d.data) {
         let coordination: Entities.Coordination = new Entities.Coordination();
-        coordination.coordinated = coordinator ? this.profile : d.data;
-        coordination.coordinator = coordinator ? d.data : this.profile;
+        coordination.coordinated = new Entities.Profile(coordinator ? this.profile : d.data);
+        coordination.coordinator = new Entities.Profile(coordinator ? d.data : this.profile);
+        if (this.profile.lid) {
+          let loading = await this.message.createLoading("Guardando");
+          loading.present();
+          this.service.saveCoordination(coordination).subscribe(c => {
+            c.coordinated = this.profiles.find(p => p.name == c.coordinated.name);
+            c.coordinator = this.profiles.find(p => p.name == c.coordinator.name);
+            loading.dismiss();
+            this.message.presentToast(coordinator ? `Coordinador asignado` : `Coordinación asignada`);
+            this.profiles.forEach(p => {
+              if (p.lid == coordination.coordinated.lid) p.coordinators.push(c);
+              else if (p.lid == coordination.coordinator.lid) p.coordinated.push(c);
+            });
+            this.profile = this.profiles.find(p => p.name == this.profile.name);
+          });
+        }
       }
     }))).present();
   }
@@ -50,21 +64,37 @@ export class AdminProfilePage implements OnInit {
     let profile: Entities.Profile = coordinator ? coordination.coordinator : coordination.coordinated;
     this.message.presentActionSheet(profile.toString(), [
       {
-        text: "Detalle", icon: "information-circle-outline", handler: (() => {
+        text: coordinator ? "Coordinadores implicitos" : "Coordinaciones implicitas", icon: "information-circle-outline", handler: (() => {
           let message: string = "<hr><b>";
-          let coordinations: string[] = this.util.implicitCoordinations(profile, coordinator).map(c => `<br>${c}`);
+          let coordinations: string[] = ProfileUtils.implicitCoordinations(profile, this.profiles, coordinator).map(c => `<br>${c}`);
           if (coordinations.length > 0) message += (coordinator ? `Coordinadores implicitos:</b>` : `Coordinaciones implicitas:</b>`) + coordinations;
           else message = coordinator ? "Nadie lo coordina" : "Nadie es coordinado por él";
           this.message.presentAlert(profile.toString(), message)
         })
       },
-      { cssClass: "danger", icon: "remove-circle-outline", text: "Desasignar", handler: (() => { }) }
+      {
+        cssClass: "danger", icon: "remove-circle-outline", text: "Desasignar", handler: (async () => {
+          if (this.profile.lid) {
+            let loading = await this.message.createLoading("Eliminando");
+            loading.present();
+            this.service.deleteCoordination(coordination).subscribe(() => {
+              loading.dismiss();
+              this.message.presentToast(coordinator ? `Coordinador asignado` : `Coordinación asignada`);
+              console.log(this.profile)
+              //if (coordinator) this.profile.coordinators.push(c);
+              //else this.profile.coordinated.push(c);
+              console.log(this.profile)
+              this.profiles.forEach(p => {
+                // if (p.lid == coordination.coordinated.lid) p.coordinators.push(c);
+                // else if (p.lid == coordination.coordinator.lid) p.coordinated.push(c);
+              });
+            })
+          }
+        })
+      }
     ]);
   }
-  public ngOnInit() {
-    this.form = Forms.getProfile(this.profile);
-    this.util = new ProfileUtils(this.profiles);
-  }
+  public ngOnInit() { this.form = Forms.getProfile(this.profile); console.log(this.profiles) }
   public saveProfile() {
     this.form = Forms.getProfile(this.form.value);
     if (!Forms.getProfile(this.form.value).invalid) this.service.save(new Entities.Profile(this.form.value)).subscribe(() => this.modal.dismiss());
@@ -77,5 +107,4 @@ export class AdminProfilePage implements OnInit {
       handler: () => this.service.delete(profile).subscribe(() => this.modal.dismiss())
     }])
   }
-
 }

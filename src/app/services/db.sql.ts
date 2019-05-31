@@ -6,8 +6,8 @@ export class SQL {
         lid INTEGER PRIMARY KEY AUTOINCREMENT,
         id INTEGER,
         edition TEXT NOT NULL,
-        rcoordinated INTEGER NOT NULL,
-        rcoordinator INTEGER NOT NULL,
+        rcoordinated INTEGER,
+        rcoordinator INTEGER,
         lcoordinated INTEGER NOT NULL,
         lcoordinator INTEGER NOT NULL,
         UNIQUE(lcoordinated,lcoordinator));`;
@@ -33,12 +33,17 @@ export class SQL {
     static EXIST_PROFILE(profile: Entities.Profile): string { return `SELECT COUNT(0) exist FROM profiles WHERE lid<>${profile.lid ? profile.lid : 0} AND UPPER(name)=UPPER('${profile.name}');`; }
     static INSERT_COORDINATIONS(coordinations: Entities.Coordination[], idLidProfiles: any[]): string {
         idLidProfiles.forEach(p => {
-            coordinations.forEach(c => {
-                if (p.id) {
+            if (p.id) {
+                coordinations.forEach(c => {
                     if (c.coordinated.id == p.id) c.lcoordinated = p.lid;
                     if (c.coordinator.id == p.id) c.lcoordinator = p.lid;
-                }
-            });
+                });
+            } else {
+                coordinations.forEach(c => {
+                    c.lcoordinated = c.coordinated.lid;
+                    c.lcoordinator = c.coordinator.lid;
+                });
+            }
         });
         return `INSERT INTO coordinations (id,edition,rcoordinated,rcoordinator,lcoordinated,lcoordinator)
             VALUES ${coordinations.map(c => `(${c.id},'${Util.getDate()}',${c.coordinated.id},${c.coordinator.id},${c.lcoordinated},${c.lcoordinator})`)};`;

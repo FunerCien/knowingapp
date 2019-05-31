@@ -108,7 +108,7 @@ export class DatabaseService {
     public prepareSynchronization(entity: any, table: Table): Observable<any> {
         return Observable.create((o: Observer<any>) => {
             this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
-                let data = sync.filter(s => s.entity == table)[0];
+                let data = sync.find(s => s.entity == table);
                 let date = new Date();
                 date.setTime(new Date(data.edition).getTime() + (new Date(entity.edition).getTime() - new Date(data.ledition).getTime()));
                 entity.edition = Util.getDate(date);
@@ -138,7 +138,7 @@ export class DatabaseService {
         return Observable.create(async (o: Observer<any[]>) => {
             if (Util.NETWORK_STATUS) {
                 this.select(SQL.ALL(Table.synchronizations)).subscribe(sync => {
-                    let data = sync.filter(s => s.entity == table)[0];
+                    let data = sync.find(s => s.entity == table);
                     this.selectSynchronizable(data.entity, data.edition, data.ledition).subscribe(f => this.service.syncSpecific(table, f).subscribe(s => this.sync(s, table).subscribe(() => this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data)))));
                 });
             } else this.select(SQL.ALL(table)).subscribe(data => this.completeObserver(o, data));

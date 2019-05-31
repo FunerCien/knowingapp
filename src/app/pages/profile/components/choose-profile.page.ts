@@ -24,8 +24,8 @@ export class ChooseProfilePage implements OnInit {
       this.message.presentActionSheet(profile.profile.toString(), [
         {
           text: "Detalle", icon: "information-circle-outline", handler: (() => {
-            let coordinated: string[] = this.util.implicitCoordinations(profile.profile, false).map(c => `<br>${c}`);
-            let coordinators: string[] = this.util.implicitCoordinations(profile.profile, true).map(c => `<br>${c}`);
+            let coordinated: string[] = ProfileUtils.implicitCoordinations(profile.profile, this.allProfiles.map(p => p.profile), false).map(c => `<br>${c}`);
+            let coordinators: string[] = ProfileUtils.implicitCoordinations(profile.profile, this.allProfiles.map(p => p.profile), true).map(c => `<br>${c}`);
             let message: string = "";
             if (coordinated.length > 0) message += `<hr><b>Coordina a:</b>${coordinated}`;
             if (coordinators.length > 0) message += `<hr><b>Es coordinado por:</b>${coordinators}`;
@@ -41,7 +41,6 @@ export class ChooseProfilePage implements OnInit {
   public ngOnInit() {
     this.allProfiles = Util.sort(this.allProfiles);
     this.profiles = this.allProfiles;
-    this.util = new ProfileUtils(this.allProfiles.map(p => p.profile));
   }
   public search(searchbar: IonSearchbar) { this.profiles = Util.search(this.allProfiles, searchbar.value); }
 }
@@ -58,4 +57,4 @@ export class ChooseProfile {
   }
 }
 
-export enum ChooseProfileStatus { ACTIVE = 1, COORDINATED = 2, COORDINATOR = 3, SELF = 4 }
+export enum ChooseProfileStatus { ACTIVE = 1, COORDINATED, COORDINATOR, SELF }
